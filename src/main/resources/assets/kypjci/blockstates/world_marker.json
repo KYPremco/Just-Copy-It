@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "damage=0": { "model": "kypjci:world_marker" },
+    "damage=1": { "model": "kypjci:world_marker_orange" },
+    "damage=2": { "model": "kypjci:world_marker_green" },
+    "inventory": { "model": "kypjci:world_marker"}
+  }
+}

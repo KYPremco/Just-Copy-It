@@ -1,0 +1,16 @@
+[
+{
+  "modid": "kypjci",
+  "name": "Just Build It",
+  "description": "Making building so easy",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["KYPremco"],
+  "credits": "Melonslise for helping the beginning",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]

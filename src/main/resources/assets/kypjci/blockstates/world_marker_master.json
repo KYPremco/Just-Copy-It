@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "normal": { "model": "kypjci:world_marker_master" },
+    "inventory": { "model": "kypjci:world_marker_master"}
+  }
+}
