@@ -1,8 +1,16 @@
 package com.kyproject.justcopyit.tileentity;
+import com.kyproject.justcopyit.init.ModBlocks;
 import com.kyproject.justcopyit.init.ModItems;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockDirectional;
+import net.minecraft.block.BlockHorizontal;
+import net.minecraft.block.properties.IProperty;
+import net.minecraft.block.properties.PropertyDirection;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
+import net.minecraft.inventory.Slot;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.*;
 import net.minecraft.tileentity.TileEntity;
@@ -11,12 +19,17 @@ import net.minecraft.util.ITickable;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Objects;
+
+import static net.minecraft.init.Blocks.PLANKS;
 
 public class TileEntityBuilder extends TileEntity implements ITickable {
 
@@ -260,35 +273,12 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
                     if(world.isAirBlock(new BlockPos(pos).add(blockStructure.get(0).x, blockStructure.get(0).y, blockStructure.get(0).z))) {
                         for (int slot = 0; slot < inventory.getSlots() - 1; slot++) {
                             if (this.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, EnumFacing.NORTH)) {
-                                if (inventory.getStackInSlot(slot) != null) {
-                                    if (inventory.getStackInSlot(slot).getItem().getRegistryName().equals(blockStructure.get(0).state.getBlock().getRegistryName())) {
-                                        boolean canBuild = false;
-                                        canBuild = true;
-                                        if(blockStructure.get(0).state.getBlock().getRegistryName().equals(Blocks.LOG.getRegistryName())) {
-                                            if(blockStructure.get(0).state.getBlock().getMetaFromState(blockStructure.get(0).state) == inventory.getStackInSlot(slot).getMetadata()) {
-                                                canBuild = true;
-                                            }
-                                        } else if(blockStructure.get(0).state.getBlock().getRegistryName().equals(Blocks.LOG2.getRegistryName())) {
-                                            if(blockStructure.get(0).state.getBlock().getMetaFromState(blockStructure.get(0).state) == inventory.getStackInSlot(slot).getMetadata()) {
-                                                canBuild = true;
-                                            }
-                                        } else if(blockStructure.get(0).state.getBlock().getRegistryName().equals(Blocks.PLANKS.getRegistryName())) {
-                                            if(blockStructure.get(0).state.getBlock().getMetaFromState(blockStructure.get(0).state) == inventory.getStackInSlot(slot).getMetadata()) {
-                                                canBuild = true;
-                                            }
-                                        } else if(blockStructure.get(0).state.getBlock().getRegistryName().equals(Blocks.STONE.getRegistryName())) {
-                                            if(blockStructure.get(0).state.getBlock().getMetaFromState(blockStructure.get(0).state) == inventory.getStackInSlot(slot).getMetadata()) {
-                                                canBuild = true;
-                                            }
-                                        } else {
-                                            canBuild = true;
-                                        }
-                                        if(canBuild) {
-                                            inventory.extractItem(slot, 1, false);
-                                            world.setBlockState(new BlockPos(pos).add(blockStructure.get(0).x, blockStructure.get(0).y, blockStructure.get(0).z), blockStructure.get(0).state);
-                                            blockStructure.remove(0);
-                                            break;
-                                        }
+                                if (inventory.getStackInSlot(slot) != ItemStack.EMPTY) {
+                                    if(this.haveItem(blockStructure.get(0).state, slot)) {
+                                        inventory.extractItem(slot, 1, false);
+                                        world.setBlockState(new BlockPos(pos).add(blockStructure.get(0).x, blockStructure.get(0).y, blockStructure.get(0).z), blockStructure.get(0).state);
+                                        blockStructure.remove(0);
+                                        break;
                                     }
                                 }
 
@@ -297,7 +287,6 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
                     } else {
                         blockStructure.remove(0);
                     }
-
                     countBlocks++;
                 }
                 counter = 0;
@@ -307,6 +296,12 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
 
         }
 
+    }
+
+    private boolean haveItem(IBlockState block, int slot) {
+        int metaFromState = block.getBlock().getMetaFromState(block);
+
+        return Objects.equals(inventory.getStackInSlot(slot).getItem().getRegistryName(), block.getBlock().getRegistryName());
     }
 
     @Override

@@ -1,7 +1,6 @@
 package com.kyproject.justcopyit;
 
 import com.kyproject.justcopyit.client.GuiHandler;
-import com.kyproject.justcopyit.init.ModCrafting;
 import com.kyproject.justcopyit.init.ModTileEntities;
 import com.kyproject.justcopyit.network.NetworkHandler;
 import com.kyproject.justcopyit.proxy.CommonProxy;
@@ -16,10 +15,10 @@ import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 
-@Mod(modid = JustCopyIt.MODID, version = JustCopyIt.VERSION, name = JustCopyIt.NAME)
+@Mod(modid = JustCopyIt.MODID, version = JustCopyIt.VERSION, name = JustCopyIt.NAME, acceptableSaveVersions = "[1.12.2]", updateJSON = "test")
 public class JustCopyIt {
     public static final String MODID = "kypjci";
-    public static final String VERSION = "0.3";
+    public static final String VERSION = "0.6";
     public static final String NAME = "Just Copy It";
 
     @SidedProxy(clientSide = "com.kyproject.justcopyit.proxy.ClientProxy", serverSide = "com.kyproject.justcopyit.proxy.CommonProxy")
@@ -43,7 +42,6 @@ public class JustCopyIt {
         proxy.init(event);
 
         NetworkHandler.init();
-        ModCrafting.addRecipe();
     }
 
     @EventHandler

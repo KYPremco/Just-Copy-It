@@ -52,28 +52,27 @@ public class ContainerBuilder extends Container {
         ItemStack stack = ItemStack.EMPTY;
         Slot slot = inventorySlots.get(index);
 
-        if (slot != null && slot.getHasStack()) {
+        if((slot != null) && slot.getHasStack()) {
             ItemStack stackInSlot = slot.getStack();
             stack = stackInSlot.copy();
 
-            int containerSlots = inventorySlots.size() - player.inventory.mainInventory.size();
+            int containerSlots = 55;
 
-            if (index < containerSlots) {
-                if (!this.mergeItemStack(stackInSlot, containerSlots, inventorySlots.size(), true)) {
+            if(index < containerSlots) {
+                if(!this.mergeItemStack(stackInSlot, containerSlots, inventorySlots.size(), true)) {
                     return ItemStack.EMPTY;
                 }
             } else if (!this.mergeItemStack(stackInSlot, 0, containerSlots, false)) {
                 return ItemStack.EMPTY;
             }
 
-            if (stackInSlot.getCount() == 0) {
+            if(stackInSlot.getCount() == 0) {
                 slot.putStack(ItemStack.EMPTY);
             } else {
-                slot.onSlotChanged();
+                slot.onSlotChange(ItemStack.EMPTY, ItemStack.EMPTY);
             }
 
             slot.onTake(player, stackInSlot);
-
         }
         return stack;
     }

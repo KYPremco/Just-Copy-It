@@ -16,6 +16,16 @@ public class SlotMemory extends SlotItemHandler {
     }
 
     @Override
+    public int getItemStackLimit(@Nonnull ItemStack stack) {
+        return 1;
+    }
+
+    @Override
+    public int getSlotStackLimit() {
+        return 1;
+    }
+
+    @Override
     public boolean isItemValid(@Nonnull ItemStack stack) {
         if(stack.getItem() == ModItems.MEMORY_CARD) {
             return true;

@@ -1,14 +1,14 @@
 [
 {
   "modid": "kypjci",
-  "name": "Just Build It",
+  "name": "Just Copy It",
   "description": "Making building so easy",
   "version": "${version}",
   "mcversion": "${mcversion}",
-  "url": "",
-  "updateUrl": "",
+  "url": "https://www.curseforge.com/minecraft/mc-mods/just-copy-it",
+  "updateUrl": "https://minecraft.curseforge.com/projects/just-copy-it/files",
   "authorList": ["KYPremco"],
-  "credits": "Melonslise for helping the beginning",
+  "credits": "Melonslise",
   "logoFile": "",
   "screenshots": [],
   "dependencies": []
