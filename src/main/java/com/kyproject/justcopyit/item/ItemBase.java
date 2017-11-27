@@ -10,6 +10,7 @@ public class ItemBase extends Item {
     {
         this.setRegistryName(new ResourceLocation(JustCopyIt.MODID, name));
         this.setUnlocalizedName(name);
+        setCreativeTab(JustCopyIt.creativeTabJustCopyIt);
     }
 
 }

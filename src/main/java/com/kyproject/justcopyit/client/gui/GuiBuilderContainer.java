@@ -18,7 +18,7 @@ import java.awt.*;
 import java.io.IOException;
 import java.util.List;
 
-public class GuiTutorialContainer extends GuiContainer {
+public class GuiBuilderContainer extends GuiContainer {
 
     private static final ResourceLocation texture = new ResourceLocation(JustCopyIt.MODID, "textures/gui/buildergui.png");
 
@@ -29,7 +29,7 @@ public class GuiTutorialContainer extends GuiContainer {
 
     final int BUTTONSAVE = 0, BUTTONLOAD = 1;
 
-    public GuiTutorialContainer(InventoryPlayer player, TileEntityBuilder tileEntityBuilder) {
+    public GuiBuilderContainer(InventoryPlayer player, TileEntityBuilder tileEntityBuilder) {
         super(new ContainerBuilder(player, tileEntityBuilder));
         te = tileEntityBuilder;
         xSize = 229;

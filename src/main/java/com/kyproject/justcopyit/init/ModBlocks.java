@@ -1,6 +1,7 @@
 package com.kyproject.justcopyit.init;
 
 import com.kyproject.justcopyit.JustCopyIt;
+import com.kyproject.justcopyit.block.BlockExportStructure;
 import com.kyproject.justcopyit.block.BlockStructureBuilder;
 import com.kyproject.justcopyit.block.BlockMarker;
 import com.kyproject.justcopyit.block.BlockMarkerMaster;
@@ -22,6 +23,10 @@ import static com.kyproject.justcopyit.util.InjectionUtil.Null;
 @GameRegistry.ObjectHolder(JustCopyIt.MODID)
 public class ModBlocks {
 
+    //Creative
+    public static final BlockExportStructure EXPORT_STRUCTURE = null;
+
+    // Survival
     public static final BlockStructureBuilder STRUCTURE_BUILDER = null;
 
     public static final BlockMarkerMaster WORLD_MARKER_MASTER = null;
@@ -32,6 +37,10 @@ public class ModBlocks {
     public static class RegistrationHandler {
 
         public static final Block[] BLOCKS = {
+                //Creative
+                new BlockExportStructure("export_structure", Material.ROCK),
+
+                // Survival
                 new BlockStructureBuilder("structure_builder", Material.ROCK),
                 new BlockMarkerMaster("world_marker_master", Material.ROCK),
                 new BlockMarker("world_marker", Material.ROCK)

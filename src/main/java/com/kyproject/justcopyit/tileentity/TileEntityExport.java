@@ -1,12 +1,13 @@
 package com.kyproject.justcopyit.tileentity;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.kyproject.justcopyit.JustCopyIt;
 import com.kyproject.justcopyit.init.ModItems;
-import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.*;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.NBTUtil;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
@@ -18,15 +19,13 @@ import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
 
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Objects;
 
-public class TileEntityBuilder extends TileEntity implements ITickable {
+public class TileEntityExport extends TileEntity implements ITickable {
 
     public ArrayList<BlockPlace> blockStructure = new ArrayList<>();
 
@@ -53,12 +52,12 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
         }
     }
 
-    public void buttonPressed(int id) {
+    public void buttonPressed(int id, String name) {
         if(id == 0) {
-            this.createStructure();
-            this.creatJson();
+            //this.createStructure();
+            this.creatJson(name);
         } else if(id == 1) {
-            this.startStructure();
+            //this.startStructure();
         }
     }
 
@@ -322,7 +321,7 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
         }
     }
 
-    private void creatJson() {
+    private void creatJson(String name) {
         ArrayList<BlockPlace2.BlockState> structure = new ArrayList<>();
 
         structure.add(new BlockPlace2.BlockState(1,1,1, 1, world.getBlockState(pos).getBlock().getMetaFromState(world.getBlockState(pos)),  world.getBlockState(pos).getBlock().getRegistryName().toString()));
@@ -330,11 +329,9 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
         structure.add(new BlockPlace2.BlockState(6,4,2, 1, world.getBlockState(pos).getBlock().getMetaFromState(world.getBlockState(pos)),  world.getBlockState(pos).getBlock().getRegistryName().toString()));
 
 
-        BlockPlace2 file = new BlockPlace2("file","HellowWorld", EnumFacing.NORTH, structure);
+        BlockPlace2 file = new BlockPlace2("file",name, EnumFacing.NORTH, structure);
 
-        String test = "test";
-
-        try (Writer writer = new FileWriter("resources\\JustCopyIt\\structures\\" + test + ".json")) {
+        try (Writer writer = new FileWriter("resources\\JustCopyIt\\structures\\" + name + ".json")) {
             Gson gson = new GsonBuilder().create();
             gson.toJson(file, writer);
         } catch (IOException e) {

@@ -19,7 +19,6 @@ public class ItemMemoryCard extends ItemBase {
 
     public ItemMemoryCard(String name) {
         super(name);
-        setCreativeTab(JustCopyIt.tabMyNewMod);
         setMaxStackSize(64);
     }
 

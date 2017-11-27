@@ -7,7 +7,6 @@ import net.minecraft.block.Block;
 import net.minecraft.block.properties.PropertyInteger;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTUtil;
@@ -27,7 +26,6 @@ public class ItemBinder extends ItemBase {
 
     public ItemBinder(String name) {
         super(name);
-        setCreativeTab(JustCopyIt.tabMyNewMod);
         setMaxStackSize(1);
     }
 

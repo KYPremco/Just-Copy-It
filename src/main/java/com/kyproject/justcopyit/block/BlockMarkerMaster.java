@@ -21,7 +21,6 @@ public class BlockMarkerMaster extends BlockBase implements ITileEntityProvider 
 
     public BlockMarkerMaster(String name, Material material) {
         super(name, material);
-        setCreativeTab(JustCopyIt.tabMyNewMod);
         setLightLevel(1F);
     }
 

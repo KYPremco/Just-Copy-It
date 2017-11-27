@@ -21,7 +21,6 @@ public class BlockMarker extends BlockBase {
     public BlockMarker(String name, Material material) {
         super(name, material);
         this.setDefaultState(this.blockState.getBaseState().withProperty(DAMAGE, Integer.valueOf(0)));
-        setCreativeTab(JustCopyIt.tabMyNewMod);
         setLightLevel(1F);
     }
 
