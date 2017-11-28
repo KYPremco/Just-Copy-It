@@ -33,6 +33,7 @@ public class TileEntityExport extends TileEntity implements ITickable {
     boolean blockIsBuilding = false;
     int countBlocks = 0;
     int counter = 0;
+    public EnumFacing facing;
 
     private static class BlockPlace {
         private int x;
@@ -54,8 +55,7 @@ public class TileEntityExport extends TileEntity implements ITickable {
 
     public void buttonPressed(int id, String name) {
         if(id == 0) {
-            //this.createStructure();
-            this.creatJson(name);
+            this.createStructure(name);
         } else if(id == 1) {
             //this.startStructure();
         }
@@ -80,8 +80,9 @@ public class TileEntityExport extends TileEntity implements ITickable {
         return rangeCalculator;
     }
 
-    private void createStructure() {
-        ArrayList<BlockPlace> blocks = new ArrayList<>();
+    private void createStructure(String name) {
+        ArrayList<BlockPlace2.BlockState> blocks = new ArrayList<>();
+
         EnumFacing forward = EnumFacing.getFront(this.getBlockMetadata());
         int fX = forward.getFrontOffsetX();
         int fZ = forward.getFrontOffsetZ();
@@ -106,7 +107,7 @@ public class TileEntityExport extends TileEntity implements ITickable {
 
         // if nothing is in slot just skip it! and range is all filled
         if(rangeX  != 0 && rangeY != 0 && rangeZ != 0) {
-            if (inventory.getStackInSlot(54) != ItemStack.EMPTY) {
+            if (inventory.getStackInSlot(0) != ItemStack.EMPTY) {
 
                 // Creating the structure arrayList
                 for (int x = this.rangeCalculator(rangeX)[0]; x < this.rangeCalculator(rangeX)[1]; x++) {
@@ -114,47 +115,50 @@ public class TileEntityExport extends TileEntity implements ITickable {
                         for (int y = this.rangeCalculator(rangeY)[0]; y < this.rangeCalculator(rangeY)[1]; y++) {
                             if (!world.isAirBlock(pos.add(x + fX, y, z + fZ))) {
                                 IBlockState state = world.getBlockState(pos.add(x + fX, y, z + fZ)).getActualState(world, pos.add(x + fX, y, z + fZ));
-                                blocks.add(new BlockPlace(x + fX, y, z + fZ, state, this.getBlockMetadata(), forward));
+                                blocks.add(new BlockPlace2.BlockState(x + fX, y, z + fZ, this.getBlockMetadata(), state.getBlock().getRegistryName().toString()));
                             }
                         }
                     }
                 }
 
+                BlockPlace2 structure = new BlockPlace2("file", name, facing, blocks);
+
+                this.createJson(name, structure);
+
+
                 // Saving the data to the memory card inside the slot
-                if (inventory.getStackInSlot(54).getItem() == ModItems.MEMORY_CARD) {
-                    NBTTagCompound nbt;
-                    ItemStack stack = inventory.getStackInSlot(54);
-
-                    // Check if stack has NBT
-                    if (stack.hasTagCompound()) {
-                        nbt = stack.getTagCompound();
-                    } else {
-                        nbt = new NBTTagCompound();
-                    }
-
-                    // Creating structure list
-                    NBTTagList tagList = new NBTTagList();
-                    for (int i = 0; i < blocks.size(); i++) {
-                        if (blocks.get(i) != null) {
-                            NBTTagCompound tag = new NBTTagCompound();
-                            tag.setString("facing", blocks.get(i).facing.toString());
-                            tag.setInteger("rotate", blocks.get(i).rotate);
-                            tag.setInteger("blockX" + i, blocks.get(i).x);
-                            tag.setInteger("blockY" + i, blocks.get(i).y);
-                            tag.setInteger("blockZ" + i, blocks.get(i).z);
-
-                            NBTUtil.writeBlockState(tag, blocks.get(i).state);
-                            tagList.appendTag(tag);
-                        }
-                    }
-                    nbt.setTag("structureList", tagList);
-
-                    // Saving all the data
-                    stack.setTagCompound(nbt);
-                }
+//                if (inventory.getStackInSlot(0).getItem() == ModItems.MEMORY_CARD) {
+//                    NBTTagCompound nbt;
+//                    ItemStack stack = inventory.getStackInSlot(0);
+//
+//                    // Check if stack has NBT
+//                    if (stack.hasTagCompound()) {
+//                        nbt = stack.getTagCompound();
+//                    } else {
+//                        nbt = new NBTTagCompound();
+//                    }
+//
+//                    // Creating structure list
+//                    NBTTagList tagList = new NBTTagList();
+//                    for (int i = 0; i < blocks.size(); i++) {
+//                        if (blocks.get(i) != null) {
+//                            NBTTagCompound tag = new NBTTagCompound();
+//                            tag.setString("facing", blocks.get(i).facing.toString());
+//                            tag.setInteger("rotate", blocks.get(i).rotate);
+//                            tag.setInteger("blockX" + i, blocks.get(i).x);
+//                            tag.setInteger("blockY" + i, blocks.get(i).y);
+//                            tag.setInteger("blockZ" + i, blocks.get(i).z);
+//
+//                            NBTUtil.writeBlockState(tag, blocks.get(i).state);
+//                            tagList.appendTag(tag);
+//                        }
+//                    }
+//                    nbt.setTag("structureList", tagList);
+//
+//                    // Saving all the data
+//                    stack.setTagCompound(nbt);
+//                }
             }
-        } else {
-            //No range meter
         }
     }
 
@@ -163,14 +167,14 @@ public class TileEntityExport extends TileEntity implements ITickable {
         ArrayList<BlockPlace> structureList = new ArrayList<>();
 
         // Reading
-        if(inventory.getStackInSlot(54) != ItemStack.EMPTY) {
-            if(inventory.getStackInSlot(54).getItem() == ModItems.MEMORY_CARD) {
-                if(inventory.getStackInSlot(54).hasTagCompound()) {
-                    if(inventory.getStackInSlot(54).getTagCompound().hasKey("structureList")) {
+        if(inventory.getStackInSlot(0) != ItemStack.EMPTY) {
+            if(inventory.getStackInSlot(0).getItem() == ModItems.MEMORY_CARD) {
+                if(inventory.getStackInSlot(0).hasTagCompound()) {
+                    if(inventory.getStackInSlot(0).getTagCompound().hasKey("structureList")) {
 
                         EnumFacing forward = EnumFacing.getFront(this.getBlockMetadata());
 
-                        NBTTagList tagList = inventory.getStackInSlot(54).getTagCompound().getTagList("structureList", Constants.NBT.TAG_COMPOUND);
+                        NBTTagList tagList = inventory.getStackInSlot(0).getTagCompound().getTagList("structureList", Constants.NBT.TAG_COMPOUND);
                         for(int i=0;i < tagList.tagCount();i++) {
                             NBTTagCompound tag = tagList.getCompoundTagAt(i);
                             int x = tag.getInteger("blockX" + i);
@@ -306,34 +310,23 @@ public class TileEntityExport extends TileEntity implements ITickable {
             int x;
             int y;
             int z;
-            int rotation;
-            int state;
+            int meta;
             String block;
 
-            private BlockState(int x, int y, int z, int rotation, int state, String block) {
+            private BlockState(int x, int y, int z, int meta, String block) {
                 this.x = x;
                 this.y = y;
                 this.z = z;
-                this.rotation = rotation;
-                this.state = state;
+                this.meta = meta;
                 this.block = block;
             }
         }
     }
 
-    private void creatJson(String name) {
-        ArrayList<BlockPlace2.BlockState> structure = new ArrayList<>();
-
-        structure.add(new BlockPlace2.BlockState(1,1,1, 1, world.getBlockState(pos).getBlock().getMetaFromState(world.getBlockState(pos)),  world.getBlockState(pos).getBlock().getRegistryName().toString()));
-        structure.add(new BlockPlace2.BlockState(2,3,1, 1, world.getBlockState(pos).getBlock().getMetaFromState(world.getBlockState(pos)),  world.getBlockState(pos).getBlock().getRegistryName().toString()));
-        structure.add(new BlockPlace2.BlockState(6,4,2, 1, world.getBlockState(pos).getBlock().getMetaFromState(world.getBlockState(pos)),  world.getBlockState(pos).getBlock().getRegistryName().toString()));
-
-
-        BlockPlace2 file = new BlockPlace2("file",name, EnumFacing.NORTH, structure);
-
+    private void createJson(String name, BlockPlace2 structure) {
         try (Writer writer = new FileWriter("resources\\JustCopyIt\\structures\\" + name + ".json")) {
             Gson gson = new GsonBuilder().create();
-            gson.toJson(file, writer);
+            gson.toJson(structure, writer);
         } catch (IOException e) {
             e.printStackTrace();
         }
