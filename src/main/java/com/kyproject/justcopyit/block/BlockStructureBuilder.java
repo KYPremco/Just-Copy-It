@@ -40,7 +40,7 @@ public class BlockStructureBuilder extends BlockBase implements ITileEntityProvi
             playerIn.openGui(JustCopyIt.instance, GuiHandler.GUI_BUILDER_CONTAINER, worldIn, pos.getX(), pos.getY(), pos.getZ());
         }
 
-        return super.onBlockActivated(worldIn, pos, state, playerIn, hand, facing, hitX, hitY, hitZ);
+        return true;
     }
 
     @Override
@@ -91,8 +91,7 @@ public class BlockStructureBuilder extends BlockBase implements ITileEntityProvi
                 for (int i = 0;i < inventory.getSlots(); i++) {
                     if (inventory.getStackInSlot(i) != ItemStack.EMPTY) {
                         EntityItem item = new EntityItem(worldIn, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, inventory.getStackInSlot(i));
-
-                        float multiplier = 0.1f;
+                        float multiplier = 0.3f;
                         float motionX = worldIn.rand.nextFloat() - 0.5f;
                         float motionY = worldIn.rand.nextFloat() - 0.5f;
                         float motionZ = worldIn.rand.nextFloat() - 0.5f;
@@ -100,6 +99,8 @@ public class BlockStructureBuilder extends BlockBase implements ITileEntityProvi
                         item.motionX = motionX * multiplier;
                         item.motionY = motionY * multiplier;
                         item.motionZ = motionZ * multiplier;
+
+                        worldIn.spawnEntity(item);
                     }
                 }
             }

@@ -33,9 +33,11 @@ public class BlockExportStructure extends BlockBase implements ITileEntityProvid
     @Override
     public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
         TileEntityExport te = (TileEntityExport) worldIn.getTileEntity(pos);
+        System.out.println(facing);
         if (te != null && te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, EnumFacing.NORTH)) {
             playerIn.openGui(JustCopyIt.instance, GuiHandler.GUI_EXPORT_CONTAINER, worldIn, pos.getX(), pos.getY(), pos.getZ());
         }
+
 
         return super.onBlockActivated(worldIn, pos, state, playerIn, hand, facing, hitX, hitY, hitZ);
     }

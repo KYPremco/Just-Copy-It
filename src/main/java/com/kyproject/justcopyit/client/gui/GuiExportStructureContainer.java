@@ -8,6 +8,7 @@ import com.kyproject.justcopyit.network.MessageHandleGuiBuilderButton;
 import com.kyproject.justcopyit.network.MessageHandleGuiExportButton;
 import com.kyproject.justcopyit.network.NetworkHandler;
 import com.kyproject.justcopyit.tileentity.TileEntityExport;
+import com.kyproject.justcopyit.tileentity.TileEntityWorldMarker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiTextField;
@@ -53,10 +54,10 @@ public class GuiExportStructureContainer extends GuiContainer {
         fontRenderer.drawString(new TextComponentTranslation("tile.tutorial_container.name").getFormattedText(), 5, 5, Color.darkGray.getRGB());
         fontRenderer.drawString("Name", 5, 20, Color.black.getRGB());
         fontRenderer.drawString("Max uses:", 75, 80, Color.black.getRGB());
-        fontRenderer.drawString("1", 125, 80, Color.black.getRGB());
+        fontRenderer.drawString("∞", 125, 80, Color.black.getRGB());
         fontRenderer.drawString("Export", 30, 77, Color.black.getRGB());
         fontRenderer.drawString("Status:", 8, 60, Color.black.getRGB());
-        fontRenderer.drawString("Idle", 45, 60, Color.black.getRGB());
+        fontRenderer.drawString(te.getSate(), 45, 60, Color.black.getRGB());
     }
 
 

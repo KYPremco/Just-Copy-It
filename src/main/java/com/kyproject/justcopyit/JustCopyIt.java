@@ -21,7 +21,7 @@ import java.io.File;
 @Mod(modid = JustCopyIt.MODID, version = JustCopyIt.VERSION, name = JustCopyIt.NAME, acceptableSaveVersions = "[1.12.2]")
 public class JustCopyIt {
     public static final String MODID = "kypjci";
-    public static final String VERSION = "0.6";
+    public static final String VERSION = "0.7";
     public static final String NAME = "Just Copy It";
 
     public static Logger logger;
@@ -57,7 +57,6 @@ public class JustCopyIt {
 
     @EventHandler
     public void postInit(FMLPostInitializationEvent event) {
-        MinecraftForge.EVENT_BUS.register(new JustCopyItEventHandler());
         proxy.postInit(event);
     }
 

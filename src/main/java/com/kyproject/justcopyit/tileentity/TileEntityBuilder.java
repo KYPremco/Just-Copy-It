@@ -1,7 +1,5 @@
 package com.kyproject.justcopyit.tileentity;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.kyproject.justcopyit.JustCopyIt;
 import com.kyproject.justcopyit.init.ModItems;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -18,71 +16,39 @@ import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
 
-import java.io.File;
-import java.io.FileWriter;
+import java.io.FileReader;
 import java.io.IOException;
-import java.io.Writer;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Objects;
 
 public class TileEntityBuilder extends TileEntity implements ITickable {
 
-    public ArrayList<BlockPlace> blockStructure = new ArrayList<>();
+    BlockPlace blockStructure;
 
     ItemStackHandler inventory = new ItemStackHandler(55);
     boolean blockIsBuilding = false;
     int countBlocks = 0;
     int counter = 0;
 
-    private static class BlockPlace {
-        private int x;
-        private int y;
-        private int z;
-        private IBlockState state;
-        private int rotate;
-        private EnumFacing facing;
-
-        private BlockPlace(int x, int y, int z, IBlockState state, int rotate, EnumFacing facing) {
-            this.x = x;
-            this.y = y;
-            this.z = z;
-            this.state = state;
-            this.rotate = rotate;
-            this.facing = facing;
-        }
-    }
-
     public void buttonPressed(int id) {
         if(id == 0) {
             this.createStructure();
-            this.creatJson();
         } else if(id == 1) {
             this.startStructure();
         }
     }
 
-    private int[] rangeCalculator(int range) {
-        int startRange;
-        int endRange;
+    public void startStructure() {
+        this.blockStructure = this.getStructure();
 
-        if(range < 0) {
-            startRange = range + 1;
-            endRange = 0;
-        } else {
-            startRange = 1;
-            endRange = range;
-        }
-
-        int[] rangeCalculator = new int[2];
-        rangeCalculator[0] = startRange;
-        rangeCalculator[1] = endRange;
-
-        return rangeCalculator;
+        blockIsBuilding = true;
+        countBlocks = 0;
+        counter = 0;
     }
 
-    private void createStructure() {
-        ArrayList<BlockPlace> blocks = new ArrayList<>();
+    public void createStructure() {
+        ArrayList<BlockPlace.BlockState> blocks = new ArrayList<>();
+
         EnumFacing forward = EnumFacing.getFront(this.getBlockMetadata());
         int fX = forward.getFrontOffsetX();
         int fZ = forward.getFrontOffsetZ();
@@ -115,13 +81,16 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
                         for (int y = this.rangeCalculator(rangeY)[0]; y < this.rangeCalculator(rangeY)[1]; y++) {
                             if (!world.isAirBlock(pos.add(x + fX, y, z + fZ))) {
                                 IBlockState state = world.getBlockState(pos.add(x + fX, y, z + fZ)).getActualState(world, pos.add(x + fX, y, z + fZ));
-                                blocks.add(new BlockPlace(x + fX, y, z + fZ, state, this.getBlockMetadata(), forward));
+                                blocks.add(new BlockPlace.BlockState(x + fX, y, z + fZ, state.getBlock().getMetaFromState(state), state.getBlock().getRegistryName().toString()));
                             }
                         }
                     }
                 }
+                BlockPlace structure = new BlockPlace("card", "card", forward, blocks);
 
-                // Saving the data to the memory card inside the slot
+
+
+                //Saving the data to the memory card inside the slot
                 if (inventory.getStackInSlot(54).getItem() == ModItems.MEMORY_CARD) {
                     NBTTagCompound nbt;
                     ItemStack stack = inventory.getStackInSlot(54);
@@ -138,62 +107,153 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
                     for (int i = 0; i < blocks.size(); i++) {
                         if (blocks.get(i) != null) {
                             NBTTagCompound tag = new NBTTagCompound();
-                            tag.setString("facing", blocks.get(i).facing.toString());
-                            tag.setInteger("rotate", blocks.get(i).rotate);
-                            tag.setInteger("blockX" + i, blocks.get(i).x);
-                            tag.setInteger("blockY" + i, blocks.get(i).y);
-                            tag.setInteger("blockZ" + i, blocks.get(i).z);
+                            tag.setInteger("blockX" + i, structure.blocks.get(i).x);
+                            tag.setInteger("blockY" + i, structure.blocks.get(i).y);
+                            tag.setInteger("blockZ" + i, structure.blocks.get(i).z);
 
-                            NBTUtil.writeBlockState(tag, blocks.get(i).state);
+                            tag.setInteger("meta" + i, structure.blocks.get(i).meta);
+                            tag.setString("block" + i, structure.blocks.get(i).block);
                             tagList.appendTag(tag);
                         }
                     }
-                    nbt.setTag("structureList", tagList);
+                    nbt.setTag("blocks", tagList);
+                    nbt.setString("type", structure.type);
+                    nbt.setString("name", structure.name);
+                    nbt.setString("facing", structure.facing.toString());
 
                     // Saving all the data
                     stack.setTagCompound(nbt);
                 }
             }
-        } else {
-            //No range meter
         }
     }
 
-    private ArrayList<BlockPlace> getStructure() {
+    public static class BlockPlace {
+        String type;
+        String name;
+        EnumFacing facing;
+        ArrayList<BlockState> blocks;
 
-        ArrayList<BlockPlace> structureList = new ArrayList<>();
+        public BlockPlace(String type, String name, EnumFacing facing, ArrayList<BlockState> blocks) {
+            this.type = type;
+            this.name = name;
+            this.facing = facing;
+            this.blocks = blocks;
+        }
+
+        public static class BlockState {
+            int x;
+            int y;
+            int z;
+            int meta;
+            String block;
+
+            public BlockState(int x, int y, int z, int meta, String block) {
+                this.x = x;
+                this.y = y;
+                this.z = z;
+                this.meta = meta;
+                this.block = block;
+            }
+        }
+    }
+
+    public BlockPlace getStructure() {
+
+        ArrayList<BlockPlace.BlockState> blockList = new ArrayList<>();
 
         // Reading
         if(inventory.getStackInSlot(54) != ItemStack.EMPTY) {
             if(inventory.getStackInSlot(54).getItem() == ModItems.MEMORY_CARD) {
                 if(inventory.getStackInSlot(54).hasTagCompound()) {
-                    if(inventory.getStackInSlot(54).getTagCompound().hasKey("structureList")) {
+                    if(inventory.getStackInSlot(54).getTagCompound().hasKey("type")) {
+                        if(Objects.equals(inventory.getStackInSlot(54).getTagCompound().getString("type"), "card")) {
+                            EnumFacing forward = EnumFacing.getFront(this.getBlockMetadata());
 
-                        EnumFacing forward = EnumFacing.getFront(this.getBlockMetadata());
+                            NBTTagList tagList = inventory.getStackInSlot(54).getTagCompound().getTagList("blocks", Constants.NBT.TAG_COMPOUND);
+                            NBTTagCompound nbt = inventory.getStackInSlot(54).getTagCompound();
+                            for(int i=0;i < tagList.tagCount();i++) {
+                                NBTTagCompound tag = tagList.getCompoundTagAt(i);
+                                int x = tag.getInteger("blockX" + i);
+                                int z = tag.getInteger("blockZ" + i);
+                                int y = tag.getInteger("blockY" + i);
+                                int meta = tag.getInteger("meta" + i);
+                                String block = tag.getString("block" + i);
 
-                        NBTTagList tagList = inventory.getStackInSlot(54).getTagCompound().getTagList("structureList", Constants.NBT.TAG_COMPOUND);
-                        for(int i=0;i < tagList.tagCount();i++) {
-                            NBTTagCompound tag = tagList.getCompoundTagAt(i);
-                            int x = tag.getInteger("blockX" + i);
-                            int z = tag.getInteger("blockZ" + i);
-                            int y = tag.getInteger("blockY" + i);
+                                int[] newBlockPosXYZ;
+                                newBlockPosXYZ = this.getRotateStructure(EnumFacing.byName(nbt.getString("facing")), forward, x, y, z);
 
-                            int[] newBlockPosXYZ;
-                            newBlockPosXYZ = this.getRotateStructure(EnumFacing.byName(tag.getString("facing")), forward, x, y, z);
+                                blockList.add(new BlockPlace.BlockState(newBlockPosXYZ[0], newBlockPosXYZ[1], newBlockPosXYZ[2], meta , block));
+                            }
+                            // state.withRotation(getRotationBlock(EnumFacing.byName(tag.getString("facing"))
+                            return new BlockPlace(nbt.getString("type"), nbt.getString("name"), EnumFacing.byName(nbt.getString("facing")), blockList);
+                        } else {
+                            BlockPlace structure = readJson(inventory.getStackInSlot(54).getTagCompound().getString("name"));
+                            EnumFacing forward = EnumFacing.getFront(this.getBlockMetadata());
 
-                            IBlockState state = NBTUtil.readBlockState(tag);
-                            structureList.add(new BlockPlace(newBlockPosXYZ[0], newBlockPosXYZ[1], newBlockPosXYZ[2],state.withRotation(getRotationBlock(EnumFacing.byName(tag.getString("facing")), forward)),this.getBlockMetadata(), forward));
+                            for(int i=0;i < structure.blocks.size(); i++) {
+                                int[] newBlockPosXYZ;
+                                newBlockPosXYZ = this.getRotateStructure(structure.facing, forward, structure.blocks.get(i).x, structure.blocks.get(i).y, structure.blocks.get(i).z);
+
+                                blockList.add(new BlockPlace.BlockState(newBlockPosXYZ[0], newBlockPosXYZ[1], newBlockPosXYZ[2], structure.blocks.get(i).meta , structure.blocks.get(i).block));
+                            }
+
+                            return new BlockPlace(structure.type, structure.name, structure.facing, blockList);
                         }
                     }
                 }
             }
         }
 
-        return structureList;
-
+        return new BlockPlace("card", "card", EnumFacing.NORTH, blockList);
     }
 
-    private Rotation getRotationBlock(EnumFacing origin, EnumFacing newRotation) {
+    @SuppressWarnings( "deprecation" )
+    @Override
+    public void update() {
+        if(blockIsBuilding) {
+            int tickCounter = 0;
+            if(counter == tickCounter) {
+                if(blockStructure.blocks.size() == countBlocks) {
+                    blockIsBuilding = false;
+                    countBlocks = tickCounter;
+                } else {
+                    if(world.isAirBlock(new BlockPos(pos).add(blockStructure.blocks.get(countBlocks).x, blockStructure.blocks.get(countBlocks).y, blockStructure.blocks.get(countBlocks).z))) {
+                        for (int slot = 0; slot < inventory.getSlots() - 1; slot++) {
+                            if (this.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, EnumFacing.NORTH)) {
+                                if (inventory.getStackInSlot(slot) != ItemStack.EMPTY) {
+                                    if(this.haveItem(blockStructure.blocks.get(countBlocks).block, slot)) {
+                                        inventory.extractItem(slot, 1, false);
+                                        BlockPos blockPos = new BlockPos(pos).add(blockStructure.blocks.get(countBlocks).x, blockStructure.blocks.get(countBlocks).y, blockStructure.blocks.get(countBlocks).z);
+                                        world.setBlockState(blockPos, Block.getBlockFromName(blockStructure.blocks.get(countBlocks).block).getStateFromMeta(blockStructure.blocks.get(countBlocks).meta).withRotation(this.getRotationBlock(blockStructure.facing, EnumFacing.getFront(this.getBlockMetadata()))));
+                                        countBlocks++;
+                                        break;
+                                    }
+                                }
+
+                            }
+                        }
+                    } else {
+                        countBlocks++;
+                    }
+                }
+                counter = 0;
+            } else {
+                counter++;
+            }
+        }
+    }
+
+    private BlockPlace readJson(String fileName) {
+        try {
+            return new Gson().fromJson(new FileReader("resources\\JustCopyIt\\structures\\" + fileName + ".json"), BlockPlace.class);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public Rotation getRotationBlock(EnumFacing origin, EnumFacing newRotation) {
         if(origin.getAxis() != EnumFacing.Axis.Y) {
             if(origin.getAxis() == newRotation.getAxis()) {
                 if(origin.getName().equals(newRotation.getName())) {
@@ -213,7 +273,7 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
         }
     }
 
-    private int[] getRotateStructure(EnumFacing origin, EnumFacing newRotation, int oldX, int oldY, int oldZ) {
+    public int[] getRotateStructure(EnumFacing origin, EnumFacing newRotation, int oldX, int oldY, int oldZ) {
         int x;
         int z;
 
@@ -247,105 +307,28 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
         return posXYZ;
     }
 
-    private void startStructure() {
-        blockStructure.clear();
-        blockStructure = (ArrayList<BlockPlace>) getStructure().clone();
-        blockIsBuilding = true;
-        countBlocks = 0;
-        counter = 0;
-    }
 
-    @Override
-    public void update() {
-        if(blockIsBuilding) {
-            int tickCounter = 0;
-            if(counter == tickCounter) {
-                if(blockStructure.size() == 0) {
-                    blockIsBuilding = false;
-                    countBlocks = tickCounter;
-                } else {
-                    if(world.isAirBlock(new BlockPos(pos).add(blockStructure.get(0).x, blockStructure.get(0).y, blockStructure.get(0).z))) {
-                        for (int slot = 0; slot < inventory.getSlots() - 1; slot++) {
-                            if (this.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, EnumFacing.NORTH)) {
-                                if (inventory.getStackInSlot(slot) != ItemStack.EMPTY) {
-                                    if(this.haveItem(blockStructure.get(0).state, slot)) {
-                                        inventory.extractItem(slot, 1, false);
-                                        world.setBlockState(new BlockPos(pos).add(blockStructure.get(0).x, blockStructure.get(0).y, blockStructure.get(0).z), blockStructure.get(0).state);
-                                        blockStructure.remove(0);
-                                        break;
-                                    }
-                                }
+    public int[] rangeCalculator(int range) {
+        int startRange;
+        int endRange;
 
-                            }
-                        }
-                    } else {
-                        blockStructure.remove(0);
-                    }
-                    countBlocks++;
-                }
-                counter = 0;
-            } else {
-                counter++;
-            }
-        }
-    }
-
-    private static class BlockPlace2 {
-        String type;
-        String name;
-        EnumFacing facing;
-        ArrayList<BlockState> blocks;
-
-        public BlockPlace2(String type, String name, EnumFacing facing, ArrayList<BlockState> blocks) {
-            this.type = type;
-            this.name = name;
-            this.facing = facing;
-            this.blocks = blocks;
+        if(range < 0) {
+            startRange = range + 1;
+            endRange = 0;
+        } else {
+            startRange = 1;
+            endRange = range;
         }
 
-        private static class BlockState {
-            int x;
-            int y;
-            int z;
-            int rotation;
-            int state;
-            String block;
+        int[] rangeCalculator = new int[2];
+        rangeCalculator[0] = startRange;
+        rangeCalculator[1] = endRange;
 
-            private BlockState(int x, int y, int z, int rotation, int state, String block) {
-                this.x = x;
-                this.y = y;
-                this.z = z;
-                this.rotation = rotation;
-                this.state = state;
-                this.block = block;
-            }
-        }
+        return rangeCalculator;
     }
 
-    private void creatJson() {
-        ArrayList<BlockPlace2.BlockState> structure = new ArrayList<>();
-
-        structure.add(new BlockPlace2.BlockState(1,1,1, 1, world.getBlockState(pos).getBlock().getMetaFromState(world.getBlockState(pos)),  world.getBlockState(pos).getBlock().getRegistryName().toString()));
-        structure.add(new BlockPlace2.BlockState(2,3,1, 1, world.getBlockState(pos).getBlock().getMetaFromState(world.getBlockState(pos)),  world.getBlockState(pos).getBlock().getRegistryName().toString()));
-        structure.add(new BlockPlace2.BlockState(6,4,2, 1, world.getBlockState(pos).getBlock().getMetaFromState(world.getBlockState(pos)),  world.getBlockState(pos).getBlock().getRegistryName().toString()));
-
-
-        BlockPlace2 file = new BlockPlace2("file","HellowWorld", EnumFacing.NORTH, structure);
-
-        String test = "test";
-
-        try (Writer writer = new FileWriter("resources\\JustCopyIt\\structures\\" + test + ".json")) {
-            Gson gson = new GsonBuilder().create();
-            gson.toJson(file, writer);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private boolean haveItem(IBlockState block, int slot) {
-        int metaFromState = block.getBlock().getMetaFromState(block);
-
-        return Objects.equals(inventory.getStackInSlot(slot).getItem().getRegistryName(), block.getBlock().getRegistryName());
+    public boolean haveItem(String block, int slot) {
+        return Objects.equals(inventory.getStackInSlot(slot).getItem().getRegistryName(), Block.getBlockFromName(block).getRegistryName());
     }
 
     @Override
