@@ -1,8 +1,13 @@
 package com.kyproject.justcopyit.tileentity;
+import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.kyproject.justcopyit.init.ModItems;
+import javafx.beans.binding.ObjectExpression;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
+import net.minecraft.item.ItemBucket;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.*;
 import net.minecraft.tileentity.TileEntity;
@@ -13,12 +18,15 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.Constants;
+import net.minecraftforge.fluids.*;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
 
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public class TileEntityBuilder extends TileEntity implements ITickable {
@@ -80,8 +88,18 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
                     for (int z = this.rangeCalculator(rangeZ)[0]; z < this.rangeCalculator(rangeZ)[1]; z++) {
                         for (int y = this.rangeCalculator(rangeY)[0]; y < this.rangeCalculator(rangeY)[1]; y++) {
                             if (!world.isAirBlock(pos.add(x + fX, y, z + fZ))) {
-                                IBlockState state = world.getBlockState(pos.add(x + fX, y, z + fZ)).getActualState(world, pos.add(x + fX, y, z + fZ));
-                                blocks.add(new BlockPlace.BlockState(x + fX, y, z + fZ, state.getBlock().getMetaFromState(state), state.getBlock().getRegistryName().toString()));
+                               if(world.getBlockState(pos.add(x + fX, y, z + fZ)).getMaterial().isLiquid()) {
+                                   if(world.getBlockState(pos.add(x + fX, y, z + fZ)).getBlock().getMetaFromState(world.getBlockState(pos.add(x + fX, y, z + fZ)).getActualState(world, pos.add(x + fX, y, z + fZ))) == 0) {
+                                       System.out.println(world.getBlockState(pos.add(x + fX, y, z + fZ)).getBlock().getMetaFromState(world.getBlockState(pos.add(x + fX, y, z + fZ)).getActualState(world, pos.add(x + fX, y, z + fZ))));
+                                       IBlockState state = world.getBlockState(pos.add(x + fX, y, z + fZ)).getActualState(world, pos.add(x + fX, y, z + fZ));
+                                       blocks.add(new BlockPlace.BlockState(x + fX, y, z + fZ, state.getBlock().getMetaFromState(state), state.getBlock().getRegistryName().toString()));
+                                   }
+                               } else {
+                                   System.out.println(world.getBlockState(pos.add(x + fX, y, z + fZ)).getBlock().getMetaFromState(world.getBlockState(pos.add(x + fX, y, z + fZ)).getActualState(world, pos.add(x + fX, y, z + fZ))));
+                                   IBlockState state = world.getBlockState(pos.add(x + fX, y, z + fZ)).getActualState(world, pos.add(x + fX, y, z + fZ));
+                                   blocks.add(new BlockPlace.BlockState(x + fX, y, z + fZ, state.getBlock().getMetaFromState(state), state.getBlock().getRegistryName().toString()));
+
+                               }
                             }
                         }
                     }
@@ -159,7 +177,6 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
     }
 
     public BlockPlace getStructure() {
-
         ArrayList<BlockPlace.BlockState> blockList = new ArrayList<>();
 
         // Reading
@@ -215,10 +232,22 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
             int tickCounter = 0;
             if(counter == tickCounter) {
                 if(blockStructure.blocks.size() == countBlocks) {
+                    markDirty();
                     blockIsBuilding = false;
                     countBlocks = tickCounter;
                 } else {
+                    boolean build;
                     if(world.isAirBlock(new BlockPos(pos).add(blockStructure.blocks.get(countBlocks).x, blockStructure.blocks.get(countBlocks).y, blockStructure.blocks.get(countBlocks).z))) {
+                        build = true;
+                    } else {
+                        if(world.getBlockState(new BlockPos(pos).add(blockStructure.blocks.get(countBlocks).x, blockStructure.blocks.get(countBlocks).y, blockStructure.blocks.get(countBlocks).z)).getMaterial().isLiquid()) {
+                            build = true;
+                        } else {
+                            build = false;
+                            countBlocks++;
+                        }
+                    }
+                    if(build) {
                         for (int slot = 0; slot < inventory.getSlots() - 1; slot++) {
                             if (this.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, EnumFacing.NORTH)) {
                                 if (inventory.getStackInSlot(slot) != ItemStack.EMPTY) {
@@ -233,8 +262,6 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
 
                             }
                         }
-                    } else {
-                        countBlocks++;
                     }
                 }
                 counter = 0;
@@ -244,14 +271,36 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
         }
     }
 
-    private BlockPlace readJson(String fileName) {
+    private ArrayList<Filter> readJsonFilter() {
         try {
-            return new Gson().fromJson(new FileReader("resources\\JustCopyIt\\structures\\" + fileName + ".json"), BlockPlace.class);
+            Type type = new TypeToken<ArrayList<Filter>>(){}.getType();
+            return new Gson().fromJson(new FileReader("resources\\JustCopyIt\\filter.json"), type);
         } catch (IOException e) {
             e.printStackTrace();
         }
         return null;
     }
+
+    private BlockPlace readJson(String fileName) {
+        try {
+            return new Gson().fromJson(new FileReader("resources\\JustCopyIt\\" + fileName + ".json"), BlockPlace.class);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static class Filter {
+        String original;
+        String replace;
+
+        public Filter(String original, String replace) {
+            this.original = original;
+            this.replace = replace;
+        }
+    }
+
+
 
     public Rotation getRotationBlock(EnumFacing origin, EnumFacing newRotation) {
         if(origin.getAxis() != EnumFacing.Axis.Y) {
@@ -307,8 +356,7 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
         return posXYZ;
     }
 
-
-    public int[] rangeCalculator(int range) {
+    private int[] rangeCalculator(int range) {
         int startRange;
         int endRange;
 
@@ -327,7 +375,42 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
         return rangeCalculator;
     }
 
-    public boolean haveItem(String block, int slot) {
+    private boolean haveItem(String block, int slot) {
+        ArrayList<Filter> filter = this.readJsonFilter();
+
+        if(Block.getBlockFromName(block).getDefaultState().getMaterial().isLiquid()) {
+            Fluid fluid = FluidRegistry.lookupFluidForBlock(Block.getBlockFromName(blockStructure.blocks.get(countBlocks).block));
+            ItemStack bucket = FluidUtil.getFilledBucket(new FluidStack(fluid, 1000));
+            if(inventory.getStackInSlot(slot).toString().equals(bucket.toString())) {
+                inventory.setStackInSlot(slot, new ItemStack(Items.BUCKET));
+                BlockPos blockPos = new BlockPos(pos).add(blockStructure.blocks.get(countBlocks).x, blockStructure.blocks.get(countBlocks).y, blockStructure.blocks.get(countBlocks).z);
+                world.setBlockState(blockPos, Block.getBlockFromName(blockStructure.blocks.get(countBlocks).block).getDefaultState());
+
+                if(world.isAirBlock(blockPos.add(0,1,0))) {
+                    System.out.println("is air");
+                    world.setBlockState(blockPos.add(0,1,0), Blocks.GRASS.getDefaultState());
+                    world.setBlockState(blockPos.add(0,1,0), Blocks.AIR.getDefaultState());
+                } else {
+                    System.out.println("is not air");
+                    IBlockState oldBlock = world.getBlockState(blockPos.add(0,1,0));
+                    world.setBlockState(blockPos.add(0,1,0), Blocks.AIR.getDefaultState());
+                    world.setBlockState(blockPos.add(0,1,0), oldBlock);
+                }
+                countBlocks++;
+                return false;
+            }
+            return false;
+        }
+
+
+        for (Filter aFilter : filter) {
+            if (aFilter.original.equals(block)) {
+                if (inventory.getStackInSlot(slot).getItem().getRegistryName().toString().equals(aFilter.replace)) {
+                    return true;
+                }
+            }
+        }
+
         return Objects.equals(inventory.getStackInSlot(slot).getItem().getRegistryName(), Block.getBlockFromName(block).getRegistryName());
     }
 
