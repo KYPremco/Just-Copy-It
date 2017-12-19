@@ -2,8 +2,12 @@ package com.kyproject.justcopyit.tileentity;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.kyproject.justcopyit.templates.StructureTemplate;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.NBTUtil;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
@@ -19,13 +23,8 @@ import java.util.ArrayList;
 
 public class TileEntityExport extends TileEntity {
 
-    ItemStackHandler inventory = new ItemStackHandler(1);
-    boolean blockIsBuilding = false;
-    int countBlocks = 0;
-    int counter = 0;
-    public EnumFacing facing;
-    public String state = "Idle";
-
+    private ItemStackHandler inventory = new ItemStackHandler(1);
+    private String state = "Idle";
 
     public void buttonPressed(int id, String name) {
         if(id == 0) {
@@ -57,13 +56,13 @@ public class TileEntityExport extends TileEntity {
     private void createStructure(String name) {
         this.setState("Creating...");
 
-        ArrayList<BlockPlace.BlockState> blocks = new ArrayList<>();
+        StructureTemplate structureTemplate = new StructureTemplate();
 
         EnumFacing forward = EnumFacing.getFront(this.getBlockMetadata());
         int fX = forward.getFrontOffsetX();
         int fZ = forward.getFrontOffsetZ();
-
         TileEntityWorldMarker te;
+
         int rangeX = 0;
         int rangeY = 0;
         int rangeZ = 0;
@@ -80,27 +79,49 @@ public class TileEntityExport extends TileEntity {
             rangeZ = te.rangeZ;
         }
 
-
         // if nothing is in slot just skip it! and range is all filled
         if(rangeX  != 0 && rangeY != 0 && rangeZ != 0) {
-            //if (inventory.getStackInSlot(0) != ItemStack.EMPTY) {
-
-                // Creating the structure arrayList
-                for (int x = this.rangeCalculator(rangeX)[0]; x < this.rangeCalculator(rangeX)[1]; x++) {
-                    for (int z = this.rangeCalculator(rangeZ)[0]; z < this.rangeCalculator(rangeZ)[1]; z++) {
-                        for (int y = this.rangeCalculator(rangeY)[0]; y < this.rangeCalculator(rangeY)[1]; y++) {
-                            if (!world.isAirBlock(pos.add(x + fX, y, z + fZ))) {
+            // Creating the structure arrayList
+            for (int x = this.rangeCalculator(rangeX)[0]; x < this.rangeCalculator(rangeX)[1]; x++) {
+                for (int z = this.rangeCalculator(rangeZ)[0]; z < this.rangeCalculator(rangeZ)[1]; z++) {
+                    for (int y = this.rangeCalculator(rangeY)[0]; y < this.rangeCalculator(rangeY)[1]; y++) {
+                        if (!world.isAirBlock(pos.add(x + fX, y, z + fZ))) {
+                            if(world.getBlockState(pos.add(x + fX, y, z + fZ)).getMaterial().isLiquid()) {
+                                if(world.getBlockState(pos.add(x + fX, y, z + fZ)).getBlock().getMetaFromState(world.getBlockState(pos.add(x + fX, y, z + fZ)).getActualState(world, pos.add(x + fX, y, z + fZ))) == 0) {
+                                    IBlockState state = world.getBlockState(pos.add(x + fX, y, z + fZ)).getActualState(world, pos.add(x + fX, y, z + fZ));
+                                    structureTemplate.add(x + fX, y, z + fZ, state);
+                                }
+                            } else {
                                 IBlockState state = world.getBlockState(pos.add(x + fX, y, z + fZ)).getActualState(world, pos.add(x + fX, y, z + fZ));
-                                blocks.add(new BlockPlace.BlockState(x + fX, y, z + fZ, state.getBlock().getMetaFromState(state), state.getBlock().getRegistryName().toString()));
+                                structureTemplate.add(x + fX, y, z + fZ, state);
                             }
                         }
                     }
                 }
+            }
 
-                this.facing = EnumFacing.getFront(this.getBlockMetadata());
-                BlockPlace structure = new BlockPlace("file", name, facing, blocks);
+            structureTemplate.create("file", name, forward);
+            StructureTemplate.BlockPlace structure = structureTemplate.getStructure();
+            NBTTagCompound nbt = new NBTTagCompound();
 
-                this.createJson(name, structure);
+            // Creating structure list
+            NBTTagList tagList = new NBTTagList();
+            for (int i = 0; i < structure.blocks.size(); i++) {
+                if (structure.blocks.get(i) != null) {
+                    NBTTagCompound tag = new NBTTagCompound();
+                    tag.setInteger("blockX" + i, structure.blocks.get(i).x);
+                    tag.setInteger("blockY" + i, structure.blocks.get(i).y);
+                    tag.setInteger("blockZ" + i, structure.blocks.get(i).z);
+                    NBTUtil.writeBlockState(tag, structure.blocks.get(i).state);
+                    tagList.appendTag(tag);
+                }
+            }
+            nbt.setTag("blocks", tagList);
+            nbt.setString("type", structure.type);
+            nbt.setString("name", structure.name);
+            nbt.setString("facing", structure.facing.toString());
+
+            this.setState(structureTemplate.createNBTFile(name, nbt));
 
         } else {
             this.setState("Error: no area found");
@@ -109,51 +130,6 @@ public class TileEntityExport extends TileEntity {
 
     private IBlockState getState() {
         return world.getBlockState(pos);
-    }
-
-    private static class BlockPlace {
-        String type;
-        String name;
-        EnumFacing facing;
-        ArrayList<BlockState> blocks;
-
-        public BlockPlace(String type, String name, EnumFacing facing, ArrayList<BlockState> blocks) {
-            this.type = type;
-            this.name = name;
-            this.facing = facing;
-            this.blocks = blocks;
-        }
-
-        private static class BlockState {
-            int x;
-            int y;
-            int z;
-            int meta;
-            String block;
-
-            private BlockState(int x, int y, int z, int meta, String block) {
-                this.x = x;
-                this.y = y;
-                this.z = z;
-                this.meta = meta;
-                this.block = block;
-            }
-        }
-    }
-
-    private void createJson(String name, BlockPlace structure) {
-        File file = new File("resources\\JustCopyIt\\structures\\" + name + ".json");
-        if(!file.exists()) {
-            try(Writer writer = new FileWriter("resources\\JustCopyIt\\structures\\" + name + ".json"))  {
-                Gson gson = new GsonBuilder().create();
-                gson.toJson(structure, writer);
-                setState("Finished");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        } else {
-            setState("File already exist");
-        }
     }
 
     public String getSate() {

@@ -1,5 +1,8 @@
 package com.kyproject.justcopyit.proxy;
 
+import com.kyproject.justcopyit.JustCopyIt;
+import com.kyproject.justcopyit.network.NetworkHandler;
+import com.kyproject.justcopyit.tileentity.TileEntityBuilder;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;

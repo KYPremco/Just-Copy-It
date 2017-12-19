@@ -16,11 +16,8 @@ public class ClientProxy extends CommonProxy {
 
     @Override
     public void init(FMLInitializationEvent event) {
-
         ClientRegistry.bindTileEntitySpecialRenderer(TileEntityWorldMarker.class, new RenderAreaLine());
     }
-
-
 
 
     @Override
