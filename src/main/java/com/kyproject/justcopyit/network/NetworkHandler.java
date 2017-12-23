@@ -15,11 +15,10 @@ public class NetworkHandler {
 
         INSTANCE.registerMessage(MessageHandleGuiBuilderButton.class, MessageHandleGuiBuilderButton.class, 0, Side.SERVER);
         INSTANCE.registerMessage(MessageHandleGuiExportButton.class, MessageHandleGuiExportButton.class, 1, Side.SERVER);
-
     }
 
     public static void sendToServer(IMessage message){
-        INSTANCE.sendToServer(message);
+        INSTANCE.sendToServer(message);;
     }
 
 }

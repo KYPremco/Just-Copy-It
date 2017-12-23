@@ -18,6 +18,7 @@ import net.minecraft.util.text.TextComponentTranslation;
 
 import java.awt.*;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class GuiBuilderContainer extends GuiContainer {
@@ -46,6 +47,12 @@ public class GuiBuilderContainer extends GuiContainer {
         this.drawDefaultBackground();
         super.drawScreen(mouseX, mouseY, partialTicks);
         this.renderHoveredToolTip(mouseX, mouseY);
+
+        int centerX = (width - xSize) / 2;
+        int centerY = (height - ySize) / 2;
+        List<String> tooltip = new ArrayList<>();
+        tooltip.add("Skip missing blocks");
+        drawTooltip(tooltip, mouseX, mouseY, centerX + 182, centerY + 72, 16,16);
     }
 
     @Override
@@ -53,6 +60,7 @@ public class GuiBuilderContainer extends GuiContainer {
         fontRenderer.drawString(new TextComponentTranslation("tile.tutorial_container.name").getFormattedText(), 5, 5, Color.darkGray.getRGB());
         fontRenderer.drawString("Build", 190, 95, Color.black.getRGB());
         fontRenderer.drawString("Copy", 190, 113, Color.black.getRGB());
+
     }
 
 
@@ -87,7 +95,7 @@ public class GuiBuilderContainer extends GuiContainer {
 
         buttonList.add(builderLoadButton = new GuiButtonMedium(BUTTONLOAD, centerX + 182, centerY + 91));
         buttonList.add(builderSaveButton = new GuiButtonMedium(BUTTONSAVE, centerX + 182, centerY + 109));
-        buttonList.add(checkButton = new GuiButtonCheck(CHECK, centerX + 182, centerY + 72, te.checked));
+        buttonList.add(checkButton = new GuiButtonCheck(CHECK, centerX + 182, centerY + 72, te.getChecked()));
 
         super.initGui();
     }

@@ -1,15 +1,14 @@
 package com.kyproject.justcopyit.container.builderContainer;
 
-import com.kyproject.justcopyit.init.ModItems;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.SlotItemHandler;
 
 import javax.annotation.Nonnull;
 
-public class SlotMemory extends SlotItemHandler {
+import static com.kyproject.justcopyit.init.ModItems.*;
 
-    private int stackLimit = -1;
+public class SlotMemory extends SlotItemHandler {
 
     public SlotMemory(IItemHandler itemHandler, final int index, final int xPosition, final int yPosition) {
         super(itemHandler, index, xPosition, yPosition);
@@ -27,10 +26,6 @@ public class SlotMemory extends SlotItemHandler {
 
     @Override
     public boolean isItemValid(@Nonnull ItemStack stack) {
-        if(stack.getItem() == ModItems.MEMORY_CARD) {
-            return true;
-        } else {
-            return false;
-        }
+        return stack.getItem() == MEMORY_CARD || stack.getItem() == MEMORY_CARD_CREATIVE;
     }
 }

@@ -2,6 +2,7 @@ package com.kyproject.justcopyit;
 
         import com.kyproject.justcopyit.client.GuiHandler;
         import com.kyproject.justcopyit.commands.JciCommands;
+        import com.kyproject.justcopyit.init.Filters;
         import com.kyproject.justcopyit.init.ModTileEntities;
         import com.kyproject.justcopyit.network.NetworkHandler;
         import com.kyproject.justcopyit.proxy.CommonProxy;
@@ -45,6 +46,13 @@ public class JustCopyIt {
 
     @EventHandler
     public void preInit(FMLPreInitializationEvent event) {
+        TileEntityBuilder tileEntityBuilder = new TileEntityBuilder();
+        StructureTemplate structureTemplate = new StructureTemplate();
+        Filters filters = new Filters();
+        filters.createFitlers();
+
+        TileEntityBuilder.filter = tileEntityBuilder.readJsonFilter();
+        structureTemplate.loadBlockItemFilter();
         logger = event.getModLog();
 
         boolean mkdirs = new File("resources/JustCopyIt/structures").mkdirs();
@@ -52,10 +60,8 @@ public class JustCopyIt {
             logger.info("Structure directory created");
         }
 
-        TileEntityBuilder tileEntityBuilder = new TileEntityBuilder();
-        TileEntityBuilder.filter = tileEntityBuilder.readJsonFilter();
-        StructureTemplate structureTemplate = new StructureTemplate();
-        structureTemplate.loadBlockItemFilter();
+        filters.createFitlers();
+
 
         creativeTabJustCopyIt = new CreativeTabJustCopyIt(CreativeTabs.getNextID(), "tab_JustCopyIt");
         ModTileEntities.init();

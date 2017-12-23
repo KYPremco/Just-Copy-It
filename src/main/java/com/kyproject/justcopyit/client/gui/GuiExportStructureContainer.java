@@ -55,7 +55,6 @@ public class GuiExportStructureContainer extends GuiContainer {
         fontRenderer.drawString("Export", 30, 77, Color.black.getRGB());
         fontRenderer.drawString("Status:", 8, 60, Color.black.getRGB());
         fontRenderer.drawString(te.getStateExport(), 45, 60, Color.black.getRGB());
-        System.out.println(te.getStateExport());
     }
 
 

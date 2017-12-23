@@ -86,21 +86,21 @@ public class TileEntityExport extends TileEntity {
                 for (int z = this.rangeCalculator(rangeZ)[0]; z < this.rangeCalculator(rangeZ)[1]; z++) {
                     for (int y = this.rangeCalculator(rangeY)[0]; y < this.rangeCalculator(rangeY)[1]; y++) {
                         if (!world.isAirBlock(pos.add(x + fX, y, z + fZ))) {
-                            if(world.getBlockState(pos.add(x + fX, y, z + fZ)).getMaterial().isLiquid()) {
-                                if(world.getBlockState(pos.add(x + fX, y, z + fZ)).getBlock().getMetaFromState(world.getBlockState(pos.add(x + fX, y, z + fZ)).getActualState(world, pos.add(x + fX, y, z + fZ))) == 0) {
+                            if (world.getBlockState(pos.add(x + fX, y, z + fZ)).getMaterial().isLiquid()) {
+                                if (world.getBlockState(pos.add(x + fX, y, z + fZ)).getBlock().getMetaFromState(world.getBlockState(pos.add(x + fX, y, z + fZ)).getActualState(world, pos.add(x + fX, y, z + fZ))) == 0) {
                                     IBlockState state = world.getBlockState(pos.add(x + fX, y, z + fZ)).getActualState(world, pos.add(x + fX, y, z + fZ));
                                     structureTemplate.addLayer("liquid", x + fX, y, z + fZ, state);
                                 }
                             } else {
                                 IBlockState state = world.getBlockState(pos.add(x + fX, y, z + fZ)).getActualState(world, pos.add(x + fX, y, z + fZ));
-                                structureTemplate.addLayer("blockLayer",x + fX, y, z + fZ, state);
+                                structureTemplate.addLayer("blockLayer", x + fX, y, z + fZ, state);
                             }
                         }
                     }
                 }
             }
             structureTemplate.combine();
-            structureTemplate.create("file", name, forward);
+            structureTemplate.create("file", name, forward, -1);
             StructureTemplate.BlockPlace structure = structureTemplate.getStructure();
             NBTTagCompound nbt = new NBTTagCompound();
 

@@ -4,6 +4,7 @@ import com.kyproject.justcopyit.JustCopyIt;
 import com.kyproject.justcopyit.item.ItemBinder;
 import com.kyproject.justcopyit.item.ItemMagicStick;
 import com.kyproject.justcopyit.item.ItemMemoryCard;
+import com.kyproject.justcopyit.item.ItemMemoryCardCreative;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.item.Item;
 import net.minecraftforge.client.event.ModelRegistryEvent;
@@ -19,6 +20,7 @@ import static com.kyproject.justcopyit.util.InjectionUtil.Null;
 public class ModItems {
 
         public static final ItemMemoryCard MEMORY_CARD = Null();
+        public static final ItemMemoryCardCreative MEMORY_CARD_CREATIVE = Null();
         public static final ItemBinder MARK_BINDER = Null();
         public static final ItemMagicStick MAGIC_STICK = Null();
 
@@ -28,6 +30,7 @@ public class ModItems {
     public static class RegistryHandler {
         private static final Item[] ITEMS = {
                 new ItemMemoryCard("memory_card"),
+                new ItemMemoryCardCreative("memory_card_creative"),
                 new ItemBinder("mark_binder"),
                 new ItemMagicStick("magic_stick")
         };

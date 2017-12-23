@@ -16,14 +16,16 @@ import java.util.ArrayList;
 
 public class StructureTemplate {
 
-    public static ArrayList<String> blockItemFilter = new ArrayList<>();
+    private static ArrayList<String> blockItemFilter = new ArrayList<>();
 
     private ArrayList<BlockPlace.BlockState> blockLayer = new ArrayList<>();
     private ArrayList<BlockPlace.BlockState> blockLayerTop = new ArrayList<>();
     private ArrayList<BlockPlace.BlockState> liquidLayer = new ArrayList<>();
 
     private ArrayList<BlockPlace.BlockState> blocks = new ArrayList<>();
+
     private BlockPlace structure;
+
 
     public void addLayer(String layer, int x, int y, int z, IBlockState state) {
         switch (layer) {
@@ -71,14 +73,14 @@ public class StructureTemplate {
         return structure;
     }
 
-    public void create(String type, String name, EnumFacing facing) {
-        structure = new BlockPlace(type, name, facing, this.blocks);
+    public void create(String type, String name, EnumFacing facing, int durability) {
+        structure = new BlockPlace(type, name, facing, durability, this.blocks);
     }
 
     public void loadBlockItemFilter() {
         try {
             Type type = new TypeToken<ArrayList<String>>(){}.getType();
-            blockItemFilter = new Gson().fromJson(new FileReader("resources\\JustCopyIt\\itemsOnBlocks.json"), type);
+            blockItemFilter = new Gson().fromJson(new FileReader("resources\\JustCopyIt\\layerFilter.json"), type);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -117,13 +119,15 @@ public class StructureTemplate {
         public String type;
         public String name;
         public EnumFacing facing;
+        public int durability;
         public ArrayList<BlockState> blocks;
 
-        private BlockPlace(String type, String name, EnumFacing facing, ArrayList<BlockState> blocks) {
+        private BlockPlace(String type, String name, EnumFacing facing, int durability, ArrayList<BlockState> blocks) {
             this.type = type;
             this.name = name;
             this.facing = facing;
             this.blocks = blocks;
+            this.durability = durability;
         }
 
         public static class BlockState {

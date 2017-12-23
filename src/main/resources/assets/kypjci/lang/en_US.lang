@@ -2,8 +2,10 @@
 itemGroup.tab_JustCopyIt=Just Copy It
 
 #Items
-item.memory_card.name=Memory card
+item.memory_card.name=Memorycard
 item.mark_binder.name=Mark binder
+item.memory_card_creative.name=Creative memorycard
+item.magic_stick.name=Magic stick
 
 #Blocks
 tile.structure_builder.name=Builder

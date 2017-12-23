@@ -12,6 +12,7 @@ import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
@@ -83,16 +84,41 @@ public class JciCommands extends CommandBase {
 
     private void giveMemorycard(String[] args, ICommandSender sender) {
         if(args.length > 1){
-            if(!args[1].equals("?")) {
-                getUsage(sender);
+            if(!args[1].equals("?") && !args[1].equals("help")) {
                 EntityPlayer player = (EntityPlayer) sender;
                 World world = ((EntityPlayer) sender).world;
                 StructureTemplate structureTemplate = new StructureTemplate();
 
                 NBTTagCompound nbt = structureTemplate.getNBT(args[1]);
 
+                if(args.length > 2) {
+                    if(this.tryParseInt(args[2]) != null) {
+                        int durability = Integer.parseInt(args[2]);
+                        if(durability <= 0) {
+                            nbt.setInteger("durability", -1);
+                        } else {
+                            nbt.setInteger("durability", durability);
+                        }
+                    } else {
+                        sender.sendMessage( new TextComponentString("§cUsage: /jci memorycard <file name> <usages> <creative>"));
+                    }
+                } else {
+                    nbt.setInteger("durability", -1);
+                }
+
                 if(nbt != null) {
-                    ItemStack item = new ItemStack(ModItems.MEMORY_CARD);
+                    ItemStack item;
+                    if(args.length > 3) {
+                        if(args[3].equals("true")) {
+                            item = new ItemStack(ModItems.MEMORY_CARD_CREATIVE);
+                        } else {
+                            item = new ItemStack(ModItems.MEMORY_CARD);
+                        }
+                    } else {
+                        item = new ItemStack(ModItems.MEMORY_CARD);
+                    }
+
+
                     item.setTagCompound(nbt);
                     if (player.inventory.getFirstEmptyStack() != -1) {
                         player.inventory.addItemStackToInventory(item);
@@ -104,13 +130,20 @@ public class JciCommands extends CommandBase {
                     sender.sendMessage( new TextComponentString("§cFile doesn't exist!!"));
                 }
             } else {
-                sender.sendMessage( new TextComponentString("§cUsage: /jci memorycard <file name> <usages>"));
+                sender.sendMessage( new TextComponentString("§cUsage: /jci memorycard <file name> <usages> <creative>"));
             }
         } else {
             this.getUsage(sender);
-            sender.sendMessage( new TextComponentString("§cUsage: /jci memorycard <file name> <usages>"));
+            sender.sendMessage( new TextComponentString("§cUsage: /jci memorycard <file name> <usages> <creative>"));
         }
     }
 
+    private Integer tryParseInt(String text) {
+        try {
+            return Integer.parseInt(text);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
 
 }
