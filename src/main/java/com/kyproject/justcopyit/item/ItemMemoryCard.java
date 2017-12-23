@@ -17,6 +17,8 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
+import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.items.IItemHandler;
 
 import javax.annotation.Nullable;
 import java.io.File;
@@ -31,36 +33,6 @@ public class ItemMemoryCard extends ItemBase {
     public ItemMemoryCard(String name) {
         super(name);
         setMaxStackSize(64);
-    }
-
-    private static class BlockPlace {
-        String type;
-        String name;
-        EnumFacing facing;
-        ArrayList<BlockState> blocks;
-
-        public BlockPlace(String type, String name, EnumFacing facing, ArrayList<BlockState> blocks) {
-            this.type = type;
-            this.name = name;
-            this.facing = facing;
-            this.blocks = blocks;
-        }
-
-        private static class BlockState {
-            int x;
-            int y;
-            int z;
-            int meta;
-            String block;
-
-            private BlockState(int x, int y, int z, int meta, String block) {
-                this.x = x;
-                this.y = y;
-                this.z = z;
-                this.meta = meta;
-                this.block = block;
-            }
-        }
     }
 
     @Override
@@ -102,9 +74,6 @@ public class ItemMemoryCard extends ItemBase {
 
     @Override
     public EnumActionResult onItemUse(EntityPlayer player, World worldIn, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
-        if(worldIn.getBlockState(pos).getBlock() == ModBlocks.STRUCTURE_BUILDER) {
-
-        }
         return super.onItemUse(player, worldIn, pos, hand, facing, hitX, hitY, hitZ);
     }
 }

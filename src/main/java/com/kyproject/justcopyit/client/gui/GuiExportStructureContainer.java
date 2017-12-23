@@ -2,13 +2,10 @@ package com.kyproject.justcopyit.client.gui;
 
 import com.kyproject.justcopyit.JustCopyIt;
 import com.kyproject.justcopyit.client.gui.GuiButtons.*;
-import com.kyproject.justcopyit.container.builderContainer.ContainerBuilder;
 import com.kyproject.justcopyit.container.exportStructureContainer.ContainerExportStructure;
-import com.kyproject.justcopyit.network.MessageHandleGuiBuilderButton;
 import com.kyproject.justcopyit.network.MessageHandleGuiExportButton;
 import com.kyproject.justcopyit.network.NetworkHandler;
 import com.kyproject.justcopyit.tileentity.TileEntityExport;
-import com.kyproject.justcopyit.tileentity.TileEntityWorldMarker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiTextField;
@@ -25,7 +22,7 @@ public class GuiExportStructureContainer extends GuiContainer {
 
     private static final ResourceLocation texture = new ResourceLocation(JustCopyIt.MODID, "textures/gui/exportgui.png");
 
-    GuiButtonExport buttonExport;
+    GuiButtonMedium buttonExport;
     GuiButtonPlus buttonPlus;
     GuiButtonMinus buttonMinus;
     private GuiTextField text;
@@ -57,7 +54,8 @@ public class GuiExportStructureContainer extends GuiContainer {
         fontRenderer.drawString("∞", 125, 80, Color.black.getRGB());
         fontRenderer.drawString("Export", 30, 77, Color.black.getRGB());
         fontRenderer.drawString("Status:", 8, 60, Color.black.getRGB());
-        fontRenderer.drawString(te.getSate(), 45, 60, Color.black.getRGB());
+        fontRenderer.drawString(te.getStateExport(), 45, 60, Color.black.getRGB());
+        System.out.println(te.getStateExport());
     }
 
 
@@ -92,7 +90,7 @@ public class GuiExportStructureContainer extends GuiContainer {
         int centerX = (width - xSize) / 2;
         int centerY = (height - ySize) / 2;
 
-        buttonList.add(buttonExport = new GuiButtonExport(BUTTONEXPORT, centerX + 27, centerY + 73));
+        buttonList.add(buttonExport = new GuiButtonMedium(BUTTONEXPORT, centerX + 27, centerY + 73));
         buttonList.add(buttonPlus = new GuiButtonPlus(BUTTONPLUS, centerX + 156, centerY + 78));
         buttonList.add(buttonMinus = new GuiButtonMinus(BUTTONMINUS, centerX + 140, centerY + 78));
         this.text = new GuiTextField(3, fontRenderer, centerX + 5,centerY + 30,100,10);

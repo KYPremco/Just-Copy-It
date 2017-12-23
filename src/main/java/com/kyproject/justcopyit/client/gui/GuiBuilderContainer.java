@@ -1,10 +1,12 @@
 package com.kyproject.justcopyit.client.gui;
 
 import com.kyproject.justcopyit.JustCopyIt;
-import com.kyproject.justcopyit.client.gui.GuiButtons.GuiBuilderSaveButton;
-import com.kyproject.justcopyit.client.gui.GuiButtons.GuiBuilderLoadButton;
+import com.kyproject.justcopyit.client.gui.GuiButtons.GuiButtonCheck;
+import com.kyproject.justcopyit.client.gui.GuiButtons.GuiButtonMedium;
+import com.kyproject.justcopyit.client.gui.GuiButtons.GuiButtonUnchecked;
 import com.kyproject.justcopyit.container.builderContainer.ContainerBuilder;
 import com.kyproject.justcopyit.network.MessageHandleGuiBuilderButton;
+import com.kyproject.justcopyit.network.MessageHandleGuiExportButton;
 import com.kyproject.justcopyit.network.NetworkHandler;
 import com.kyproject.justcopyit.tileentity.TileEntityBuilder;
 import net.minecraft.client.Minecraft;
@@ -22,12 +24,15 @@ public class GuiBuilderContainer extends GuiContainer {
 
     private static final ResourceLocation texture = new ResourceLocation(JustCopyIt.MODID, "textures/gui/buildergui.png");
 
-    GuiBuilderSaveButton builderSaveButton;
-    GuiBuilderLoadButton builderLoadButton;
+    GuiButtonMedium builderSaveButton;
+    GuiButtonMedium builderLoadButton;
+    GuiButtonCheck checkButton;
+    GuiButtonUnchecked uncheckedButton;
+
     private TileEntityBuilder te;
 
 
-    final int BUTTONSAVE = 0, BUTTONLOAD = 1;
+    final int BUTTONSAVE = 0, BUTTONLOAD = 1, CHECK = 2, UNCHECKED = 3;
 
     public GuiBuilderContainer(InventoryPlayer player, TileEntityBuilder tileEntityBuilder) {
         super(new ContainerBuilder(player, tileEntityBuilder));
@@ -46,7 +51,8 @@ public class GuiBuilderContainer extends GuiContainer {
     @Override
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
         fontRenderer.drawString(new TextComponentTranslation("tile.tutorial_container.name").getFormattedText(), 5, 5, Color.darkGray.getRGB());
-
+        fontRenderer.drawString("Build", 190, 95, Color.black.getRGB());
+        fontRenderer.drawString("Copy", 190, 113, Color.black.getRGB());
     }
 
 
@@ -59,6 +65,10 @@ public class GuiBuilderContainer extends GuiContainer {
             case BUTTONLOAD:
                 NetworkHandler.sendToServer(new MessageHandleGuiBuilderButton(te, 1));
                 break;
+            case CHECK:
+                NetworkHandler.sendToServer(new MessageHandleGuiBuilderButton(te, 2));
+                checkButton.checked = !checkButton.checked;
+                break;
         }
 
         super.actionPerformed(button);
@@ -68,7 +78,6 @@ public class GuiBuilderContainer extends GuiContainer {
     protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
         Minecraft.getMinecraft().getTextureManager().bindTexture(texture);
         drawTexturedModalRect(guiLeft, guiTop, 0, 0, xSize, ySize);
-
     }
 
     @Override
@@ -76,8 +85,9 @@ public class GuiBuilderContainer extends GuiContainer {
         int centerX = (width - xSize) / 2;
         int centerY = (height - ySize) / 2;
 
-        buttonList.add(builderSaveButton = new GuiBuilderSaveButton(BUTTONSAVE, centerX + 182, centerY + 76));
-        buttonList.add(builderLoadButton = new GuiBuilderLoadButton(BUTTONLOAD, centerX + 202, centerY + 76));
+        buttonList.add(builderLoadButton = new GuiButtonMedium(BUTTONLOAD, centerX + 182, centerY + 91));
+        buttonList.add(builderSaveButton = new GuiButtonMedium(BUTTONSAVE, centerX + 182, centerY + 109));
+        buttonList.add(checkButton = new GuiButtonCheck(CHECK, centerX + 182, centerY + 72, te.checked));
 
         super.initGui();
     }

@@ -10,6 +10,8 @@ import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.*;
+import net.minecraft.network.NetworkManager;
+import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
@@ -21,6 +23,7 @@ import net.minecraftforge.fluids.*;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
 
+import javax.annotation.Nullable;
 import java.io.*;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -35,20 +38,56 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
     private boolean blockIsBuilding = false;
     private int countBlocks = 0;
     private int counter = 0;
+    private boolean isLiquid = false;
+    public boolean checked = true;
 
     public void buttonPressed(int id) {
-        if(id == 0) {
-            this.createStructure();
-        } else if(id == 1) {
-            this.startStructure();
+        switch (id) {
+            case 0:
+                this.createStructure();
+                break;
+            case 1:
+                this.startStructure();
+                break;
+            case 2:
+                this.setChecked();
+                break;
+            default:
+                break;
         }
     }
 
+    private void setChecked () {
+        this.checked = !this.checked;
+        sendUpdates();
+    }
+
+    public boolean getChecked() {
+        return this.checked;
+    }
+
+    private void sendUpdates() {
+        world.markBlockRangeForRenderUpdate(pos, pos);
+        world.notifyBlockUpdate(pos, getState(), getState(), 3);
+        world.scheduleBlockUpdate(pos,this.getBlockType(),0,0);
+        markDirty();
+    }
+
+    private IBlockState getState() {
+        return world.getBlockState(pos);
+    }
+
     private void startStructure() {
-        this.blockStructure = this.getStructure();
-        blockIsBuilding = true;
-        countBlocks = 0;
-        counter = 0;
+        if(world.isRemote) {
+            System.out.println("[CLIENT]" + this.checked);
+        } else {
+            System.out.println("[SERVER]" + this.checked);
+        }
+
+//        this.blockStructure = this.getStructure();
+//        blockIsBuilding = true;
+//        countBlocks = 0;
+//        counter = 0;
     }
 
     private void createStructure() {
@@ -78,25 +117,25 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
         // if nothing is in slot just skip it! and range is all filled
         if(rangeX  != 0 && rangeY != 0 && rangeZ != 0) {
             if (inventory.getStackInSlot(54) != ItemStack.EMPTY) {
-
-                // Creating the structure arrayList
-                for (int x = this.rangeCalculator(rangeX)[0]; x < this.rangeCalculator(rangeX)[1]; x++) {
-                    for (int z = this.rangeCalculator(rangeZ)[0]; z < this.rangeCalculator(rangeZ)[1]; z++) {
-                        for (int y = this.rangeCalculator(rangeY)[0]; y < this.rangeCalculator(rangeY)[1]; y++) {
-                            if (!world.isAirBlock(pos.add(x + fX, y, z + fZ))) {
-                               if(world.getBlockState(pos.add(x + fX, y, z + fZ)).getMaterial().isLiquid()) {
-                                   if(world.getBlockState(pos.add(x + fX, y, z + fZ)).getBlock().getMetaFromState(world.getBlockState(pos.add(x + fX, y, z + fZ)).getActualState(world, pos.add(x + fX, y, z + fZ))) == 0) {
-                                       IBlockState state = world.getBlockState(pos.add(x + fX, y, z + fZ)).getActualState(world, pos.add(x + fX, y, z + fZ));
-                                       structureTemplate.add(x + fX, y, z + fZ, state);
-                                   }
-                               } else {
-                                   IBlockState state = world.getBlockState(pos.add(x + fX, y, z + fZ)).getActualState(world, pos.add(x + fX, y, z + fZ));
-                                   structureTemplate.add(x + fX, y, z + fZ, state);
-                               }
+                    // Creating the structure arrayList
+                    for (int x = this.rangeCalculator(rangeX)[0]; x < this.rangeCalculator(rangeX)[1]; x++) {
+                        for (int z = this.rangeCalculator(rangeZ)[0]; z < this.rangeCalculator(rangeZ)[1]; z++) {
+                            for (int y = this.rangeCalculator(rangeY)[0]; y < this.rangeCalculator(rangeY)[1]; y++) {
+                                if (!world.isAirBlock(pos.add(x + fX, y, z + fZ))) {
+                                    if (world.getBlockState(pos.add(x + fX, y, z + fZ)).getMaterial().isLiquid()) {
+                                        if (world.getBlockState(pos.add(x + fX, y, z + fZ)).getBlock().getMetaFromState(world.getBlockState(pos.add(x + fX, y, z + fZ)).getActualState(world, pos.add(x + fX, y, z + fZ))) == 0) {
+                                            IBlockState state = world.getBlockState(pos.add(x + fX, y, z + fZ)).getActualState(world, pos.add(x + fX, y, z + fZ));
+                                            structureTemplate.addLayer("liquid", x + fX, y, z + fZ, state);
+                                        }
+                                    } else {
+                                        IBlockState state = world.getBlockState(pos.add(x + fX, y, z + fZ)).getActualState(world, pos.add(x + fX, y, z + fZ));
+                                        structureTemplate.addLayer("blockLayer", x + fX, y, z + fZ, state);
+                                    }
+                                }
                             }
                         }
                     }
-                }
+                structureTemplate.combine();
 
                 structureTemplate.create("card", "card", forward);
                 StructureTemplate.BlockPlace structure = structureTemplate.getStructure();
@@ -132,6 +171,8 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
 
                     // Saving all the data
                     stack.setTagCompound(nbt);
+
+                    markDirty();
                 }
             }
         }
@@ -156,7 +197,6 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
                                 int z = tag.getInteger("blockZ" + i);
                                 int y = tag.getInteger("blockY" + i);
                                 IBlockState state = NBTUtil.readBlockState(tag);
-                                String block = tag.getString("block" + i);
 
                                 int[] newBlockPosXYZ;
                                 newBlockPosXYZ = this.getRotateStructure(EnumFacing.byName(nbt.getString("facing")), forward, x, y, z);
@@ -168,28 +208,31 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
                             return structureTemplate.getStructure();
 
                         } else {
-                            NBTTagCompound nbt = structureTemplate.getNBT(inventory.getStackInSlot(54).getTagCompound().getString("name"));
+                            File file = new File("resources\\JustCopyIt\\structures\\" + inventory.getStackInSlot(54).getTagCompound().getString("name") + ".dat");
+                            if(file.exists()) {
+                                NBTTagCompound nbt = structureTemplate.getNBT(inventory.getStackInSlot(54).getTagCompound().getString("name"));
+                                EnumFacing forward = EnumFacing.getFront(this.getBlockMetadata());
+                                NBTTagList tagList = nbt.getTagList("blocks", Constants.NBT.TAG_COMPOUND);
 
-                            EnumFacing forward = EnumFacing.getFront(this.getBlockMetadata());
-                            NBTTagList tagList = nbt.getTagList("blocks", Constants.NBT.TAG_COMPOUND);
+                                for(int i=0;i < tagList.tagCount();i++) {
+                                    NBTTagCompound tag = tagList.getCompoundTagAt(i);
+                                    int x = tag.getInteger("blockX" + i);
+                                    int z = tag.getInteger("blockZ" + i);
+                                    int y = tag.getInteger("blockY" + i);
+                                    IBlockState state = NBTUtil.readBlockState(tag);
 
-                            for(int i=0;i < tagList.tagCount();i++) {
-                                NBTTagCompound tag = tagList.getCompoundTagAt(i);
-                                int x = tag.getInteger("blockX" + i);
-                                int z = tag.getInteger("blockZ" + i);
-                                int y = tag.getInteger("blockY" + i);
-                                IBlockState state = NBTUtil.readBlockState(tag);
-                                //int meta = tag.getInteger("meta" + i);
-                                String block = tag.getString("block" + i);
+                                    int[] newBlockPosXYZ;
+                                    newBlockPosXYZ = this.getRotateStructure(EnumFacing.byName(nbt.getString("facing")), forward, x, y, z);
 
-                                int[] newBlockPosXYZ;
-                                newBlockPosXYZ = this.getRotateStructure(EnumFacing.byName(nbt.getString("facing")), forward, x, y, z);
+                                    structureTemplate.add(newBlockPosXYZ[0], newBlockPosXYZ[1], newBlockPosXYZ[2], state);
+                                }
 
-                                structureTemplate.add(newBlockPosXYZ[0], newBlockPosXYZ[1], newBlockPosXYZ[2], state);
+                                structureTemplate.create(nbt.getString("type"), nbt.getString("name"), EnumFacing.byName(nbt.getString("facing")));
+                                return structureTemplate.getStructure();
+                            } else {
+                                structureTemplate.create("file", "?", EnumFacing.NORTH);
+                                return structureTemplate.getStructure();
                             }
-
-                            structureTemplate.create(nbt.getString("type"), nbt.getString("name"), EnumFacing.byName(nbt.getString("facing")));
-                            return structureTemplate.getStructure();
                         }
                     }
                 }
@@ -207,9 +250,9 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
             int tickCounter = 0;
             if(counter == tickCounter) {
                 if(blockStructure.blocks.size() == countBlocks) {
-                    markDirty();
                     blockIsBuilding = false;
-                    countBlocks = tickCounter;
+                    markDirty();
+                    countBlocks = blockStructure.blocks.size();
                 } else {
                     boolean build;
                     if(world.isAirBlock(new BlockPos(pos).add(blockStructure.blocks.get(countBlocks).x, blockStructure.blocks.get(countBlocks).y, blockStructure.blocks.get(countBlocks).z))) {
@@ -218,31 +261,42 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
                         if(world.getBlockState(new BlockPos(pos).add(blockStructure.blocks.get(countBlocks).x, blockStructure.blocks.get(countBlocks).y, blockStructure.blocks.get(countBlocks).z)).getMaterial().isLiquid()) {
                             build = true;
                         } else {
-                            build = false;
                             countBlocks++;
+                            build = false;
+
                         }
                     }
+
                     if(build) {
+                        boolean skipBlock = true;
                         for (int slot = 0; slot < inventory.getSlots() - 1; slot++) {
                             if (this.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, EnumFacing.NORTH)) {
                                 if (inventory.getStackInSlot(slot) != ItemStack.EMPTY) {
                                     if(this.haveItem(blockStructure.blocks.get(countBlocks).state.getBlock().getRegistryName().toString(), slot)) {
-                                        inventory.extractItem(slot, 1, false);
                                         BlockPos blockPos = new BlockPos(pos).add(blockStructure.blocks.get(countBlocks).x, blockStructure.blocks.get(countBlocks).y, blockStructure.blocks.get(countBlocks).z);
-
                                         IBlockState stateBlock = blockStructure.blocks.get(countBlocks).state;
-
                                         EnumFacing facing_new = EnumFacing.getFront(this.getBlockMetadata());
                                         EnumFacing facing_original = blockStructure.facing;
-
                                         stateBlock = this.getStateWithRotation(facing_original, facing_new, stateBlock);
                                         world.setBlockState(blockPos, stateBlock);
+
+                                        if(!this.isLiquid) {
+                                            inventory.extractItem(slot, 1, false);
+                                        } else {
+                                            inventory.setStackInSlot(slot, new ItemStack(Items.BUCKET));
+                                            this.updateWaterTick(blockPos);
+                                        }
+                                        this.isLiquid = false;
+                                        skipBlock = false;
                                         countBlocks++;
                                         break;
                                     }
                                 }
-
                             }
+                        }
+
+                        if(skipBlock) {
+                            countBlocks++;
                         }
                     }
                 }
@@ -277,11 +331,14 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
 
         PropertyDirection allDirections = BlockDirectional.FACING;
         PropertyDirection horizontal = BlockHorizontal.FACING;
+        PropertyDirection torchDirections = BlockTorch.FACING;
 
         if(state.getPropertyKeys().contains(allDirections)) {
             return state.withProperty(allDirections, this.setRotation(origin, newRotation, state.getValue(allDirections)));
         } else if (state.getPropertyKeys().contains(horizontal)) {
             return state.withProperty(horizontal, this.setRotation(origin, newRotation, state.getValue(horizontal)));
+        } else if (state.getPropertyKeys().contains(torchDirections)) {
+            return state.withProperty(torchDirections, this.setRotation(origin, newRotation, state.getValue(torchDirections)));
         }
         return state;
     }
@@ -298,7 +355,6 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
                 if(origin.rotateY().getName().equals(newRotation.getName())){
                     return blockRotation.rotateY();
                 } else {
-
                     return blockRotation.rotateYCCW();
                 }
             }
@@ -360,25 +416,24 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
         return rangeCalculator;
     }
 
+    private void updateWaterTick(BlockPos blockPos) {
+        if(world.isAirBlock(blockPos.add(0,1,0))) {
+            world.setBlockState(blockPos.add(0,1,0), Blocks.GRASS.getDefaultState());
+            world.setBlockState(blockPos.add(0,1,0), Blocks.AIR.getDefaultState());
+        } else {
+            IBlockState oldBlock = world.getBlockState(blockPos.add(0,1,0));
+            world.setBlockState(blockPos.add(0,1,0), Blocks.AIR.getDefaultState());
+            world.setBlockState(blockPos.add(0,1,0), oldBlock);
+        }
+    }
+
     private boolean haveItem(String block, int slot) {
         if(Block.getBlockFromName(block).getDefaultState().getMaterial().isLiquid()) {
             Fluid fluid = FluidRegistry.lookupFluidForBlock(Block.getBlockFromName(blockStructure.blocks.get(countBlocks).state.getBlock().getRegistryName().toString()));
             ItemStack bucket = FluidUtil.getFilledBucket(new FluidStack(fluid, 1000));
             if(inventory.getStackInSlot(slot).toString().equals(bucket.toString())) {
-                inventory.setStackInSlot(slot, new ItemStack(Items.BUCKET));
-                BlockPos blockPos = new BlockPos(pos).add(blockStructure.blocks.get(countBlocks).x, blockStructure.blocks.get(countBlocks).y, blockStructure.blocks.get(countBlocks).z);
-                world.setBlockState(blockPos, Block.getBlockFromName(blockStructure.blocks.get(countBlocks).state.getBlock().getRegistryName().toString()).getDefaultState());
-
-                if(world.isAirBlock(blockPos.add(0,1,0))) {
-                    world.setBlockState(blockPos.add(0,1,0), Blocks.GRASS.getDefaultState());
-                    world.setBlockState(blockPos.add(0,1,0), Blocks.AIR.getDefaultState());
-                } else {
-                    IBlockState oldBlock = world.getBlockState(blockPos.add(0,1,0));
-                    world.setBlockState(blockPos.add(0,1,0), Blocks.AIR.getDefaultState());
-                    world.setBlockState(blockPos.add(0,1,0), oldBlock);
-                }
-                countBlocks++;
-                return false;
+                this.isLiquid = true;
+                return true;
             }
             return false;
         }
@@ -404,16 +459,34 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
         return INFINITE_EXTENT_AABB;
     }
 
-    //Some other stuff
     @Override
     public void readFromNBT(NBTTagCompound compound) {
         super.readFromNBT(compound);
         inventory.deserializeNBT(compound.getCompoundTag("inventory"));
+        this.checked = compound.getBoolean("checked");
+    }
+
+    @Override
+    @Nullable
+    public SPacketUpdateTileEntity getUpdatePacket() {
+        return new SPacketUpdateTileEntity(this.pos, 3, this.getUpdateTag());
+    }
+
+    @Override
+    public NBTTagCompound getUpdateTag() {
+        return this.writeToNBT(new NBTTagCompound());
+    }
+
+    @Override
+    public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
+        super.onDataPacket(net, pkt);
+        handleUpdateTag(pkt.getNbtCompound());
     }
 
     @Override
     public NBTTagCompound writeToNBT(NBTTagCompound compound) {
         compound.setTag("inventory", inventory.serializeNBT());
+        compound.setBoolean("checked", this.checked);
         return super.writeToNBT(compound);
     }
 

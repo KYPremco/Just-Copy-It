@@ -21,7 +21,7 @@ public class ContainerBuilder extends Container {
             IItemHandler inventory = tileEntityBuilder.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, EnumFacing.NORTH);
 
             // Memory slot
-            addSlotToContainer(new SlotMemory(inventory, 54,192,54));
+            addSlotToContainer(new SlotMemory(inventory, 54,205,72));
 
             // Container inventory
             for(int y = 0;y < 6;y++) {

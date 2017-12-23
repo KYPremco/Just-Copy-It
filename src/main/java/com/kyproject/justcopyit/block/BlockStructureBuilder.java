@@ -2,6 +2,7 @@ package com.kyproject.justcopyit.block;
 
 import com.kyproject.justcopyit.JustCopyIt;
 import com.kyproject.justcopyit.client.GuiHandler;
+import com.kyproject.justcopyit.init.ModItems;
 import com.kyproject.justcopyit.tileentity.TileEntityBuilder;
 import net.minecraft.block.BlockHorizontal;
 import net.minecraft.block.ITileEntityProvider;
@@ -13,6 +14,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
@@ -36,6 +38,20 @@ public class BlockStructureBuilder extends BlockBase implements ITileEntityProvi
     @Override
     public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
         TileEntityBuilder te = (TileEntityBuilder) worldIn.getTileEntity(pos);
+
+        if(playerIn.inventory.getCurrentItem().getItem().equals(ModItems.MEMORY_CARD)) {
+            if (te != null && te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, EnumFacing.NORTH)) {
+                IItemHandler inventory = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, EnumFacing.NORTH);
+                if (inventory != null) {
+                    if (inventory.getStackInSlot(54).isEmpty()) {
+                        inventory.insertItem(54, playerIn.inventory.getCurrentItem().copy().splitStack(1), false);
+                        playerIn.inventory.getCurrentItem().splitStack(1);
+                        return true;
+                    }
+                }
+            }
+        }
+
         if (te != null && te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, EnumFacing.NORTH)) {
             playerIn.openGui(JustCopyIt.instance, GuiHandler.GUI_BUILDER_CONTAINER, worldIn, pos.getX(), pos.getY(), pos.getZ());
         }

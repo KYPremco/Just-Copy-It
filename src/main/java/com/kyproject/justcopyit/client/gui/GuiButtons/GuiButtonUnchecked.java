@@ -5,26 +5,29 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.util.ResourceLocation;
 
-public class GuiButtonExport extends GuiButton {
+public class GuiButtonUnchecked extends GuiButton {
 
-    private final ResourceLocation texture = new ResourceLocation(JustCopyIt.MODID, "textures/gui/buttons.png");
-    private int u = 119;
-    private int v = 14;
+    final ResourceLocation texture = new ResourceLocation(JustCopyIt.MODID, "textures/gui/buttons.png");
+    int u = 0;
+    int v = 18;
 
-    public GuiButtonExport(int buttonId, int x, int y) {
-        super(buttonId, x, y, 40, 16, "");
+    public GuiButtonUnchecked(int buttonId, int x, int y) {
+        super(buttonId, x, y, 16, 16, "");
     }
 
     @Override
     public void drawButton(Minecraft mc, int mouseX, int mouseY, float partialTicks) {
         if (visible) {
             mc.renderEngine.bindTexture(texture);
-            hovered = mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height;
-
-            if(hovered) {
-                u = 162;
+            if(mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height) {
+                hovered = true;
             } else {
-                u = 119;
+                hovered = false;
+            }
+            if(hovered) {
+                u = 18;
+            } else {
+                u = 0;
             }
             drawTexturedModalRect(x, y, u, v, width, height);
         }

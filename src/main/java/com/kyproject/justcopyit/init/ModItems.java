@@ -2,6 +2,7 @@ package com.kyproject.justcopyit.init;
 
 import com.kyproject.justcopyit.JustCopyIt;
 import com.kyproject.justcopyit.item.ItemBinder;
+import com.kyproject.justcopyit.item.ItemMagicStick;
 import com.kyproject.justcopyit.item.ItemMemoryCard;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.item.Item;
@@ -18,16 +19,17 @@ import static com.kyproject.justcopyit.util.InjectionUtil.Null;
 public class ModItems {
 
         public static final ItemMemoryCard MEMORY_CARD = Null();
+        public static final ItemBinder MARK_BINDER = Null();
+        public static final ItemMagicStick MAGIC_STICK = Null();
 
-        public static final ItemBinder MARK_BINDER = null;
 
 
     @Mod.EventBusSubscriber()
     public static class RegistryHandler {
-
-        public static final Item[] ITEMS = {
+        private static final Item[] ITEMS = {
                 new ItemMemoryCard("memory_card"),
-                new ItemBinder("mark_binder")
+                new ItemBinder("mark_binder"),
+                new ItemMagicStick("magic_stick")
         };
 
         @SubscribeEvent

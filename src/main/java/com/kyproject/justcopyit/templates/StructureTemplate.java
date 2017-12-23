@@ -1,21 +1,70 @@
 package com.kyproject.justcopyit.templates;
 
+import com.google.common.reflect.TypeToken;
+import com.google.gson.Gson;
+import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 
 public class StructureTemplate {
 
+    public static ArrayList<String> blockItemFilter = new ArrayList<>();
+
+    private ArrayList<BlockPlace.BlockState> blockLayer = new ArrayList<>();
+    private ArrayList<BlockPlace.BlockState> blockLayerTop = new ArrayList<>();
+    private ArrayList<BlockPlace.BlockState> liquidLayer = new ArrayList<>();
+
     private ArrayList<BlockPlace.BlockState> blocks = new ArrayList<>();
     private BlockPlace structure;
 
+    public void addLayer(String layer, int x, int y, int z, IBlockState state) {
+        switch (layer) {
+            case "blockLayer":
+                this.setLayer(x, y, z, state);
+                break;
+            case "liquid":
+                liquidLayer.add(new BlockPlace.BlockState(x,y,z,state));
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void setLayer(int x, int y, int z, IBlockState state) {
+        boolean inFilter = false;
+        for(String blockString : blockItemFilter) {
+            if(blockString != null) {
+                Block blockInFilter = Block.getBlockFromName(blockString);
+                if(blockInFilter != null) {
+                    if(blockInFilter.equals(state.getBlock())) {
+                        blockLayerTop.add(new BlockPlace.BlockState(x,y,z,state));
+                        inFilter = true;
+                        break;
+                    }
+                }
+            }
+        }
+        if(!inFilter) {
+            blockLayer.add(new BlockPlace.BlockState(x,y,z,state));
+        }
+    }
+
     public void add(int x, int y, int z, IBlockState state) {
         blocks.add(new BlockPlace.BlockState(x,y,z,state));
+    }
+
+    public void combine() {
+        blocks.addAll(blockLayer);
+        blocks.addAll(blockLayerTop);
+        blocks.addAll(liquidLayer);
     }
 
     public BlockPlace getStructure() {
@@ -26,6 +75,14 @@ public class StructureTemplate {
         structure = new BlockPlace(type, name, facing, this.blocks);
     }
 
+    public void loadBlockItemFilter() {
+        try {
+            Type type = new TypeToken<ArrayList<String>>(){}.getType();
+            blockItemFilter = new Gson().fromJson(new FileReader("resources\\JustCopyIt\\itemsOnBlocks.json"), type);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
     public String createNBTFile(String name, NBTTagCompound structure) {
         File file = new File("resources\\JustCopyIt\\structures\\" + name + ".dat");
 

@@ -1,10 +1,12 @@
 package com.kyproject.justcopyit;
 
         import com.kyproject.justcopyit.client.GuiHandler;
+        import com.kyproject.justcopyit.commands.JciCommands;
         import com.kyproject.justcopyit.init.ModTileEntities;
         import com.kyproject.justcopyit.network.NetworkHandler;
         import com.kyproject.justcopyit.proxy.CommonProxy;
         import com.kyproject.justcopyit.tab.CreativeTabJustCopyIt;
+        import com.kyproject.justcopyit.templates.StructureTemplate;
         import com.kyproject.justcopyit.tileentity.TileEntityBuilder;
         import net.minecraft.creativetab.CreativeTabs;
         import net.minecraftforge.fml.common.Mod;
@@ -13,6 +15,7 @@ package com.kyproject.justcopyit;
         import net.minecraftforge.fml.common.event.FMLInitializationEvent;
         import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
         import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+        import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
         import net.minecraftforge.fml.common.network.NetworkRegistry;
         import org.apache.logging.log4j.Logger;
 
@@ -34,6 +37,12 @@ public class JustCopyIt {
 
     public static CreativeTabJustCopyIt creativeTabJustCopyIt;
 
+    @Mod.EventHandler
+    public static void init(FMLServerStartingEvent event)
+    {
+        event.registerServerCommand(new JciCommands());
+    }
+
     @EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         logger = event.getModLog();
@@ -45,6 +54,8 @@ public class JustCopyIt {
 
         TileEntityBuilder tileEntityBuilder = new TileEntityBuilder();
         TileEntityBuilder.filter = tileEntityBuilder.readJsonFilter();
+        StructureTemplate structureTemplate = new StructureTemplate();
+        structureTemplate.loadBlockItemFilter();
 
         creativeTabJustCopyIt = new CreativeTabJustCopyIt(CreativeTabs.getNextID(), "tab_JustCopyIt");
         ModTileEntities.init();
@@ -54,6 +65,7 @@ public class JustCopyIt {
     @EventHandler
     public void init(FMLInitializationEvent event) {
         NetworkRegistry.INSTANCE.registerGuiHandler(instance, new GuiHandler());
+
         proxy.init(event);
         NetworkHandler.init();
     }

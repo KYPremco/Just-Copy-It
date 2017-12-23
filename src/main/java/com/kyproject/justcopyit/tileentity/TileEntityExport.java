@@ -89,17 +89,17 @@ public class TileEntityExport extends TileEntity {
                             if(world.getBlockState(pos.add(x + fX, y, z + fZ)).getMaterial().isLiquid()) {
                                 if(world.getBlockState(pos.add(x + fX, y, z + fZ)).getBlock().getMetaFromState(world.getBlockState(pos.add(x + fX, y, z + fZ)).getActualState(world, pos.add(x + fX, y, z + fZ))) == 0) {
                                     IBlockState state = world.getBlockState(pos.add(x + fX, y, z + fZ)).getActualState(world, pos.add(x + fX, y, z + fZ));
-                                    structureTemplate.add(x + fX, y, z + fZ, state);
+                                    structureTemplate.addLayer("liquid", x + fX, y, z + fZ, state);
                                 }
                             } else {
                                 IBlockState state = world.getBlockState(pos.add(x + fX, y, z + fZ)).getActualState(world, pos.add(x + fX, y, z + fZ));
-                                structureTemplate.add(x + fX, y, z + fZ, state);
+                                structureTemplate.addLayer("blockLayer",x + fX, y, z + fZ, state);
                             }
                         }
                     }
                 }
             }
-
+            structureTemplate.combine();
             structureTemplate.create("file", name, forward);
             StructureTemplate.BlockPlace structure = structureTemplate.getStructure();
             NBTTagCompound nbt = new NBTTagCompound();
@@ -132,7 +132,7 @@ public class TileEntityExport extends TileEntity {
         return world.getBlockState(pos);
     }
 
-    public String getSate() {
+    public String getStateExport() {
         return this.state;
     }
 

@@ -38,7 +38,7 @@ public class BlockExportStructure extends BlockBase implements ITileEntityProvid
         }
 
 
-        return super.onBlockActivated(worldIn, pos, state, playerIn, hand, facing, hitX, hitY, hitZ);
+        return true;
     }
 
     @Override
