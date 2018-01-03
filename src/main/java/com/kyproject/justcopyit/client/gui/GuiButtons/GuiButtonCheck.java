@@ -13,7 +13,7 @@ public class GuiButtonCheck extends GuiButton {
     int v = 0;
 
     public GuiButtonCheck(int buttonId, int x, int y, boolean checked) {
-        super(buttonId, x, y, 16, 16, "");
+        super(buttonId, x, y, 18, 18, "");
         this.checked = checked;
     }
 

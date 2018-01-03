@@ -89,18 +89,18 @@ public class TileEntityExport extends TileEntity {
                             if (world.getBlockState(pos.add(x + fX, y, z + fZ)).getMaterial().isLiquid()) {
                                 if (world.getBlockState(pos.add(x + fX, y, z + fZ)).getBlock().getMetaFromState(world.getBlockState(pos.add(x + fX, y, z + fZ)).getActualState(world, pos.add(x + fX, y, z + fZ))) == 0) {
                                     IBlockState state = world.getBlockState(pos.add(x + fX, y, z + fZ)).getActualState(world, pos.add(x + fX, y, z + fZ));
-                                    structureTemplate.addLayer("liquid", x + fX, y, z + fZ, state);
+                                    structureTemplate.addLayer("liquid", x + fX, y, z + fZ, state, world, pos);
                                 }
                             } else {
                                 IBlockState state = world.getBlockState(pos.add(x + fX, y, z + fZ)).getActualState(world, pos.add(x + fX, y, z + fZ));
-                                structureTemplate.addLayer("blockLayer", x + fX, y, z + fZ, state);
+                                structureTemplate.addLayer("blockLayer", x + fX, y, z + fZ, state, world, pos);
                             }
                         }
                     }
                 }
             }
             structureTemplate.combine();
-            structureTemplate.create("file", name, forward, -1);
+            structureTemplate.create("card", "card", forward, -1, rangeX, rangeY, rangeZ);
             StructureTemplate.BlockPlace structure = structureTemplate.getStructure();
             NBTTagCompound nbt = new NBTTagCompound();
 
@@ -113,12 +113,19 @@ public class TileEntityExport extends TileEntity {
                     tag.setInteger("blockY" + i, structure.blocks.get(i).y);
                     tag.setInteger("blockZ" + i, structure.blocks.get(i).z);
                     NBTUtil.writeBlockState(tag, structure.blocks.get(i).state);
+                    if(structure.blocks.get(i).nbtTagCompound != null) {
+                        tag.setTag("nbt", structure.blocks.get(i).nbtTagCompound);
+                    }
                     tagList.appendTag(tag);
                 }
             }
             nbt.setTag("blocks", tagList);
             nbt.setString("type", structure.type);
             nbt.setString("name", structure.name);
+            nbt.setInteger("durability", structure.durability);
+            nbt.setInteger("rangeX", rangeX);
+            nbt.setInteger("rangeY", rangeY);
+            nbt.setInteger("rangeZ", rangeZ);
             nbt.setString("facing", structure.facing.toString());
 
             this.setState(structureTemplate.createNBTFile(name, nbt));

@@ -1,6 +1,8 @@
 package com.kyproject.justcopyit.proxy;
 
 import com.kyproject.justcopyit.block.render.RenderAreaLine;
+import com.kyproject.justcopyit.block.render.RenderBuilder;
+import com.kyproject.justcopyit.tileentity.TileEntityBuilder;
 import com.kyproject.justcopyit.tileentity.TileEntityWorldMarker;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -17,6 +19,7 @@ public class ClientProxy extends CommonProxy {
     @Override
     public void init(FMLInitializationEvent event) {
         ClientRegistry.bindTileEntitySpecialRenderer(TileEntityWorldMarker.class, new RenderAreaLine());
+        ClientRegistry.bindTileEntitySpecialRenderer(TileEntityBuilder.class, new RenderBuilder());
     }
 
 

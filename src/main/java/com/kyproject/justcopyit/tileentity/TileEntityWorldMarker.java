@@ -23,14 +23,12 @@ public class TileEntityWorldMarker extends TileEntity implements ITickable{
     public int rangeY = 0;
     public int rangeZ = 0;
 
-    private BlockPos master;
     public BlockPos slaveX;
     public BlockPos slaveY;
     public BlockPos slaveZ;
 
 
     public void setLine(BlockPos master, BlockPos slave, EntityPlayer player) {
-        this.master = master;
 
         int masterX = master.getX(), masterY = master.getY(), masterZ = master.getZ();
         int slaveX = slave.getX(), slaveY = slave.getY(), slaveZ = slave.getZ();

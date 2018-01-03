@@ -12,7 +12,7 @@ public class GuiButtonMedium extends GuiButton {
     private int v = 14;
 
     public GuiButtonMedium(int buttonId, int x, int y) {
-        super(buttonId, x, y, 40, 16, "");
+        super(buttonId, x, y, 42, 18, "");
     }
 
     @Override

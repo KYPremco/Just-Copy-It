@@ -19,7 +19,7 @@ public class Filters {
         this.createLayerFilter();
     }
 
-    public void createFitlers()  {
+    public void createFilter()  {
         File itemFilterFile = new File("resources\\JustCopyIt\\changeItemFilter.json");
         File layerFilterFile = new File("resources\\JustCopyIt\\layerFilter.json");
 

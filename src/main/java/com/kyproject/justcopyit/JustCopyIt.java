@@ -25,7 +25,7 @@ package com.kyproject.justcopyit;
 @Mod(modid = JustCopyIt.MODID, version = JustCopyIt.VERSION, name = JustCopyIt.NAME, acceptableSaveVersions = "[1.12.2]")
 public class JustCopyIt {
     public static final String MODID = "kypjci";
-    public static final String VERSION = "0.7";
+    public static final String VERSION = "0.9";
     public static final String NAME = "Just Copy It";
 
     public static Logger logger;
@@ -46,21 +46,22 @@ public class JustCopyIt {
 
     @EventHandler
     public void preInit(FMLPreInitializationEvent event) {
+        logger = event.getModLog();
         TileEntityBuilder tileEntityBuilder = new TileEntityBuilder();
         StructureTemplate structureTemplate = new StructureTemplate();
         Filters filters = new Filters();
-        filters.createFitlers();
-
-        TileEntityBuilder.filter = tileEntityBuilder.readJsonFilter();
-        structureTemplate.loadBlockItemFilter();
-        logger = event.getModLog();
 
         boolean mkdirs = new File("resources/JustCopyIt/structures").mkdirs();
         if(mkdirs) {
             logger.info("Structure directory created");
         }
+        filters.createFilter();
 
-        filters.createFitlers();
+        TileEntityBuilder.filter = tileEntityBuilder.readJsonFilter();
+        structureTemplate.loadBlockItemFilter();
+
+
+        filters.createFilter();
 
 
         creativeTabJustCopyIt = new CreativeTabJustCopyIt(CreativeTabs.getNextID(), "tab_JustCopyIt");

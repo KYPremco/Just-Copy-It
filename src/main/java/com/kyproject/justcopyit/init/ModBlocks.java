@@ -1,10 +1,7 @@
 package com.kyproject.justcopyit.init;
 
 import com.kyproject.justcopyit.JustCopyIt;
-import com.kyproject.justcopyit.block.BlockExportStructure;
-import com.kyproject.justcopyit.block.BlockStructureBuilder;
-import com.kyproject.justcopyit.block.BlockMarker;
-import com.kyproject.justcopyit.block.BlockMarkerMaster;
+import com.kyproject.justcopyit.block.*;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
@@ -24,14 +21,13 @@ import static com.kyproject.justcopyit.util.InjectionUtil.Null;
 public class ModBlocks {
 
     //Creative
-    public static final BlockExportStructure EXPORT_STRUCTURE = null;
+    public static final BlockExportStructure EXPORT_STRUCTURE = Null();
 
     // Survival
-    public static final BlockStructureBuilder STRUCTURE_BUILDER = null;
-
-    public static final BlockMarkerMaster WORLD_MARKER_MASTER = null;
-
-    public static final BlockMarker WORLD_MARKER = null;
+    public static final BlockStructureBuilder STRUCTURE_BUILDER = Null();
+    public static final BlockMarkerMaster WORLD_MARKER_MASTER = Null();
+    public static final BlockMarker WORLD_MARKER = Null();
+    public static final BlockStructureScanner STRUCTURE_SCANNER = Null();
 
     @Mod.EventBusSubscriber(modid = JustCopyIt.MODID)
     public static class RegistrationHandler {
@@ -43,7 +39,8 @@ public class ModBlocks {
                 // Survival
                 new BlockStructureBuilder("structure_builder", Material.ROCK),
                 new BlockMarkerMaster("world_marker_master", Material.ROCK),
-                new BlockMarker("world_marker", Material.ROCK)
+                new BlockMarker("world_marker", Material.ROCK),
+                new BlockStructureScanner("structure_scanner", Material.ROCK)
         };
 
         @SubscribeEvent

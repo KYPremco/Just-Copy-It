@@ -6,7 +6,9 @@ import com.kyproject.justcopyit.tileentity.TileEntityWorldMarker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.RenderItem;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.entity.RenderEntityItem;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.renderer.vertex.VertexBuffer;
@@ -43,6 +45,7 @@ public class RenderAreaLine extends TileEntitySpecialRenderer<TileEntityWorldMar
         double y = te.rangeY;
         double z = te.rangeZ;
         double width = 0.5;
+
 
         if(x == 0 || y == 0 || z == 0) {
             if(z != 0) {

@@ -5,9 +5,12 @@ import com.kyproject.justcopyit.client.gui.GuiButtons.GuiButtonCheck;
 import com.kyproject.justcopyit.client.gui.GuiButtons.GuiButtonMedium;
 import com.kyproject.justcopyit.client.gui.GuiButtons.GuiButtonUnchecked;
 import com.kyproject.justcopyit.container.builderContainer.ContainerBuilder;
+import com.kyproject.justcopyit.container.scannercontainer.ContainerScanner;
 import com.kyproject.justcopyit.network.MessageHandleGuiBuilderButton;
+import com.kyproject.justcopyit.network.MessageHandleGuiScannerButton;
 import com.kyproject.justcopyit.network.NetworkHandler;
 import com.kyproject.justcopyit.tileentity.TileEntityBuilder;
+import com.kyproject.justcopyit.tileentity.TileEntityScanner;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.inventory.GuiContainer;
@@ -20,25 +23,25 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GuiBuilderContainer extends GuiContainer {
+public class GuiScannerContainer extends GuiContainer {
 
-    private static final ResourceLocation texture = new ResourceLocation(JustCopyIt.MODID, "textures/gui/buildergui.png");
+    private static final ResourceLocation texture = new ResourceLocation(JustCopyIt.MODID, "textures/gui/scannergui.png");
 
     GuiButtonMedium builderSaveButton;
     GuiButtonMedium builderLoadButton;
     GuiButtonCheck checkButton;
     GuiButtonUnchecked uncheckedButton;
 
-    private TileEntityBuilder te;
+    private TileEntityScanner te;
 
 
-    final int BUTTONLOAD = 1, CHECK = 2;
+    final int BUTTONSAVE = 0, BUTTONLOAD = 1, CHECK = 2;
 
-    public GuiBuilderContainer(InventoryPlayer player, TileEntityBuilder tileEntityBuilder) {
-        super(new ContainerBuilder(player, tileEntityBuilder));
-        te = tileEntityBuilder;
-        xSize = 256;
-        ySize = 256;
+    public GuiScannerContainer(InventoryPlayer player, TileEntityScanner tileEntityScanner) {
+        super(new ContainerScanner(player, tileEntityScanner));
+        te = tileEntityScanner;
+        xSize = 184;
+        ySize = 116;
     }
 
     @Override
@@ -56,21 +59,16 @@ public class GuiBuilderContainer extends GuiContainer {
 
     @Override
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
-        fontRenderer.drawString(new TextComponentTranslation("tile.builder_container.name").getFormattedText(), 5, 5, Color.darkGray.getRGB());
-        fontRenderer.drawString(new TextComponentTranslation("tile.builder_container.build").getFormattedText(), 136, 152, Color.black.getRGB());
+        fontRenderer.drawString(new TextComponentTranslation("tile.scanner_container.name").getFormattedText(), 5, 5, Color.darkGray.getRGB());
+        fontRenderer.drawString(new TextComponentTranslation("tile.scanner_container.copy").getFormattedText(), 70, 13, Color.black.getRGB());
     }
 
 
     @Override
     protected void actionPerformed(GuiButton button) throws IOException {
         switch (button.id) {
-            case BUTTONLOAD:
-                te.startStructure();
-                NetworkHandler.sendToServer(new MessageHandleGuiBuilderButton(te, 1));
-                break;
-            case CHECK:
-                NetworkHandler.sendToServer(new MessageHandleGuiBuilderButton(te, 2));
-                checkButton.checked = !checkButton.checked;
+            case BUTTONSAVE:
+                NetworkHandler.sendToServer(new MessageHandleGuiScannerButton(te, 0));
                 break;
         }
 
@@ -88,8 +86,7 @@ public class GuiBuilderContainer extends GuiContainer {
         int centerX = (width - xSize) / 2;
         int centerY = (height - ySize) / 2;
 
-        buttonList.add(builderLoadButton = new GuiButtonMedium(BUTTONLOAD, centerX + 126, centerY + 147));
-        buttonList.add(checkButton = new GuiButtonCheck(CHECK, centerX + 170, centerY + 147, te.getChecked()));
+        buttonList.add(builderSaveButton = new GuiButtonMedium(BUTTONSAVE, centerX + 61, centerY + 8));
 
         super.initGui();
     }

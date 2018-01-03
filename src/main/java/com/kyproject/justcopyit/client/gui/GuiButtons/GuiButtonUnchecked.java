@@ -12,7 +12,7 @@ public class GuiButtonUnchecked extends GuiButton {
     int v = 18;
 
     public GuiButtonUnchecked(int buttonId, int x, int y) {
-        super(buttonId, x, y, 16, 16, "");
+        super(buttonId, x, y, 18, 18, "");
     }
 
     @Override

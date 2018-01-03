@@ -1,6 +1,9 @@
-package com.kyproject.justcopyit.container.builderContainer;
+package com.kyproject.justcopyit.container.scannercontainer;
 
-import com.kyproject.justcopyit.tileentity.TileEntityBuilder;
+import com.kyproject.justcopyit.container.builderContainer.SlotBuilderInventory;
+import com.kyproject.justcopyit.container.builderContainer.SlotMemory;
+import com.kyproject.justcopyit.container.builderContainer.SlotSpeedUpgrade;
+import com.kyproject.justcopyit.tileentity.TileEntityScanner;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
@@ -12,40 +15,25 @@ import net.minecraftforge.items.IItemHandler;
 
 import javax.annotation.Nullable;
 
-public class ContainerBuilder extends Container {
+public class ContainerScanner extends Container {
 
-    public ContainerBuilder(InventoryPlayer inventoryPlayer, TileEntityBuilder tileEntityBuilder) {
-        if(tileEntityBuilder.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, EnumFacing.NORTH)) {
-            IItemHandler inventory = tileEntityBuilder.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, EnumFacing.NORTH);
+    public ContainerScanner(InventoryPlayer inventoryPlayer, TileEntityScanner tileEntityScanner) {
+        if(tileEntityScanner.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, EnumFacing.NORTH)) {
+            IItemHandler inventory = tileEntityScanner.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, EnumFacing.NORTH);
 
             // Memory slot
-            addSlotToContainer(new SlotMemory(inventory, 130,192, 148));
-
-            // SpeedUpgrade slot
-            addSlotToContainer(new SlotSpeedUpgrade(inventory, 129, 48, 148));
-
-            // Memory upgrade
-            //TODO: Memory upgrade
-
-
-            // Container inventory
-            for(int y = 0;y < 7;y++) {
-                for(int x = 0; x < 13; x++) {
-                    addSlotToContainer(new SlotBuilderInventory(inventory, x + (y * 13), 12 + x * 18, 17 + y * 18));
-                }
-            }
-
+            addSlotToContainer(new SlotMemory(inventory, 0,106,9));
 
             // Main player inventory
             for(int y = 0;y < 3;y++) {
                 for(int x = 0; x < 9; x++) {
-                    addSlotToContainer(new Slot(inventoryPlayer, x + (y * 9) + 9, 48 + x * 18, 171 + y * 18));
+                    addSlotToContainer(new Slot(inventoryPlayer, x + (y * 9) + 9, 12 + x * 18, 30 + y * 18));
                 }
             }
 
             // Player hotbar
             for(int i = 0;i < 9;i++) {
-                addSlotToContainer(new Slot(inventoryPlayer, i, 48 + (i * 18), 229));
+                addSlotToContainer(new Slot(inventoryPlayer, i, 12 + (i * 18), 88));
             }
         }
 
@@ -57,14 +45,11 @@ public class ContainerBuilder extends Container {
         ItemStack stack = ItemStack.EMPTY;
         Slot slot = inventorySlots.get(index);
 
-
-
         if((slot != null) && slot.getHasStack()) {
             ItemStack stackInSlot = slot.getStack();
             stack = stackInSlot.copy();
 
-            int containerSlots = 93;
-
+            int containerSlots = 1;
 
             if(index < containerSlots) {
                 if(!this.mergeItemStack(stackInSlot, containerSlots, inventorySlots.size(), true)) {

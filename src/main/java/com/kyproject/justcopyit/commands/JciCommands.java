@@ -4,15 +4,11 @@ import com.kyproject.justcopyit.JustCopyIt;
 import com.kyproject.justcopyit.init.ModItems;
 import com.kyproject.justcopyit.templates.StructureTemplate;
 import com.kyproject.justcopyit.tileentity.TileEntityBuilder;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
@@ -22,7 +18,6 @@ import net.minecraft.world.World;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.ArrayList;
 import java.util.List;
 
 public class JciCommands extends CommandBase {
@@ -36,7 +31,7 @@ public class JciCommands extends CommandBase {
     @Nonnull
     @Override
     public String getUsage(ICommandSender sender) {
-        return "/jci <memorycard|JciCommands>";
+        return "/jci <memorycard|reload>";
     }
 
     @Override
@@ -62,7 +57,6 @@ public class JciCommands extends CommandBase {
     @Nonnull
     @Override
     public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos targetPos) {
-
         if (args.length == 1)
         {
             return getListOfStringsMatchingLastWord(args, "memorycard", "reload");
@@ -83,13 +77,14 @@ public class JciCommands extends CommandBase {
     }
 
     private void giveMemorycard(String[] args, ICommandSender sender) {
-        if(args.length > 1){
+        if(args.length > 1) {
             if(!args[1].equals("?") && !args[1].equals("help")) {
                 EntityPlayer player = (EntityPlayer) sender;
                 World world = ((EntityPlayer) sender).world;
                 StructureTemplate structureTemplate = new StructureTemplate();
 
                 NBTTagCompound nbt = structureTemplate.getNBT(args[1]);
+
 
                 if(args.length > 2) {
                     if(this.tryParseInt(args[2]) != null) {
@@ -117,7 +112,6 @@ public class JciCommands extends CommandBase {
                     } else {
                         item = new ItemStack(ModItems.MEMORY_CARD);
                     }
-
 
                     item.setTagCompound(nbt);
                     if (player.inventory.getFirstEmptyStack() != -1) {

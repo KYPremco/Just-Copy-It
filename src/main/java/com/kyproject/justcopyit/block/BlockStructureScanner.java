@@ -3,7 +3,7 @@ package com.kyproject.justcopyit.block;
 import com.kyproject.justcopyit.JustCopyIt;
 import com.kyproject.justcopyit.client.GuiHandler;
 import com.kyproject.justcopyit.init.ModItems;
-import com.kyproject.justcopyit.tileentity.TileEntityBuilder;
+import com.kyproject.justcopyit.tileentity.TileEntityScanner;
 import net.minecraft.block.BlockHorizontal;
 import net.minecraft.block.ITileEntityProvider;
 import net.minecraft.block.material.Material;
@@ -18,32 +18,35 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 
 import javax.annotation.Nullable;
 
-public class BlockStructureBuilder extends BlockBase implements ITileEntityProvider {
+public class BlockStructureScanner extends BlockBase implements ITileEntityProvider {
 
     public static final PropertyDirection FACING = BlockHorizontal.FACING;
+    private static final AxisAlignedBB COLLISION_BOX = new AxisAlignedBB(0.0625 * 3, 0, 0.0625 * 3, 0.0625 * 13, 0.0625 * 11, 0.0625 * 13);
 
-    public BlockStructureBuilder(String name, Material material) {
+    public BlockStructureScanner(String name, Material material) {
         super(name, material);
         this.setDefaultState(this.blockState.getBaseState().withProperty(FACING, EnumFacing.NORTH));
     }
 
     @Override
     public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
-        TileEntityBuilder te = (TileEntityBuilder) worldIn.getTileEntity(pos);
+        TileEntityScanner te = (TileEntityScanner) worldIn.getTileEntity(pos);
 
         if(playerIn.inventory.getCurrentItem().getItem().equals(ModItems.MEMORY_CARD)) {
             if (te != null && te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, EnumFacing.NORTH)) {
                 IItemHandler inventory = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, EnumFacing.NORTH);
                 if (inventory != null) {
-                    if (inventory.getStackInSlot(130).isEmpty()) {
-                        inventory.insertItem(130, playerIn.inventory.getCurrentItem().copy().splitStack(1), false);
+                    if (inventory.getStackInSlot(36).isEmpty()) {
+                        inventory.insertItem(36, playerIn.inventory.getCurrentItem().copy().splitStack(1), false);
                         playerIn.inventory.getCurrentItem().splitStack(1);
                         return true;
                     }
@@ -52,10 +55,21 @@ public class BlockStructureBuilder extends BlockBase implements ITileEntityProvi
         }
 
         if (te != null && te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, EnumFacing.NORTH)) {
-            playerIn.openGui(JustCopyIt.instance, GuiHandler.GUI_BUILDER_CONTAINER, worldIn, pos.getX(), pos.getY(), pos.getZ());
+            playerIn.openGui(JustCopyIt.instance, GuiHandler.GUI_SCANNER_CONTAINER, worldIn, pos.getX(), pos.getY(), pos.getZ());
         }
 
         return true;
+    }
+
+    @Override
+    public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos) {
+        return COLLISION_BOX;
+    }
+
+    @Nullable
+    @Override
+    public AxisAlignedBB getCollisionBoundingBox(IBlockState blockState, IBlockAccess worldIn, BlockPos pos) {
+        return COLLISION_BOX;
     }
 
     @Override
@@ -99,7 +113,7 @@ public class BlockStructureBuilder extends BlockBase implements ITileEntityProvi
 
     @Override
     public void breakBlock(World worldIn, BlockPos pos, IBlockState state) {
-        TileEntityBuilder te = (TileEntityBuilder) worldIn.getTileEntity(pos);
+        TileEntityScanner te = (TileEntityScanner) worldIn.getTileEntity(pos);
         if(te != null && te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, EnumFacing.NORTH)) {
             IItemHandler inventory = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, EnumFacing.NORTH);
             if(inventory != null) {
@@ -126,6 +140,6 @@ public class BlockStructureBuilder extends BlockBase implements ITileEntityProvi
     @Nullable
     @Override
     public TileEntity createNewTileEntity(World worldIn, int meta) {
-        return new TileEntityBuilder();
+        return new TileEntityScanner();
     }
 }
