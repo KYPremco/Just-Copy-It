@@ -27,7 +27,9 @@ public class ModItems {
         public static final ItemMemory ITEM_MEMORY = Null();
         public static final ItemProcessor ITEM_PROCESSOR = Null();
         public static final ItemLens ITEM_LENS = Null();
-        public static final ItemUpgradeEmpty ITEM_UPGRADE_EMPTY = Null();
+        public static final ItemUpgradeEmpty UPGRADE_EMPTY = Null();
+        public static final ItemMemoryUpgrade UPGRADE_MEMORY = Null();
+        public static final ItemRemote REMOTE = Null();
 
 
     @Mod.EventBusSubscriber()
@@ -42,7 +44,9 @@ public class ModItems {
                 new ItemMemory("memory"),
                 new ItemProcessor("processor"),
                 new ItemLens("lens"),
-                new ItemUpgradeEmpty("upgrade_empty")
+                new ItemUpgradeEmpty("upgrade_empty"),
+                new ItemMemoryUpgrade("upgrade_memory"),
+                new ItemRemote("remote")
         };
 
         @SubscribeEvent

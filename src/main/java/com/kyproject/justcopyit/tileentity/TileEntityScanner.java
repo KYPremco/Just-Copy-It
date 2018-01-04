@@ -57,7 +57,6 @@ public class TileEntityScanner extends TileEntity{
 
         // if nothing is in slot just skip it! and range is all filled
         if(rangeX  != 0 && rangeY != 0 && rangeZ != 0) {
-            System.out.println(inventory.getStackInSlot(0));
             if (!inventory.getStackInSlot(0).isEmpty()) {
 
                 // Creating the structure arrayList

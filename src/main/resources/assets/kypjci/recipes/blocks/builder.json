@@ -1,0 +1,28 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "@L@",
+    "MPM",
+    "CCC"
+  ],
+  "key": {
+    "@": {
+      "item": "kypjci:lens"
+    },
+    "L": {
+      "item": "kypjci:laser"
+    },
+    "M": {
+      "item": "kypjci:memory"
+    },
+    "P": {
+      "item": "kypjci:processor"
+    },
+    "C": {
+      "item": "minecraft:coal_block"
+    }
+  },
+  "result": {
+    "item": "kypjci:structure_builder"
+  }
+}

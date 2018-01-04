@@ -1,9 +1,9 @@
 {
   "variants": {
-    "facing=north": { "model": "kypjci:structure_scanner" },
-    "facing=south": { "model": "kypjci:structure_scanner", "y": 180 },
-    "facing=west":  { "model": "kypjci:structure_scanner", "y": 270 },
-    "facing=east":  { "model": "kypjci:structure_scanner", "y": 90 },
-    "inventory": { "model": "kypjci:structure_scanner"}
+    "facing=north": { "model": "kypjci:builder" },
+    "facing=south": { "model": "kypjci:builder", "y": 180 },
+    "facing=west":  { "model": "kypjci:builder", "y": 270 },
+    "facing=east":  { "model": "kypjci:builder", "y": 90 },
+    "inventory": { "model": "kypjci:builder"}
   }
 }

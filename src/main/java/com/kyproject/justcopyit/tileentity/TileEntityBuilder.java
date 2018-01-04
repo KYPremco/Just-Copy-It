@@ -1,22 +1,16 @@
 package com.kyproject.justcopyit.tileentity;
-import com.google.common.base.Optional;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.kyproject.justcopyit.JustCopyIt;
 import com.kyproject.justcopyit.init.Filters;
-import com.kyproject.justcopyit.init.ModBlocks;
 import com.kyproject.justcopyit.init.ModItems;
 import com.kyproject.justcopyit.templates.StructureTemplate;
 import com.kyproject.justcopyit.util.NBTUtilFix;
 import net.minecraft.block.*;
-import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.properties.PropertyDirection;
-import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemSeeds;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.*;
@@ -25,12 +19,13 @@ import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.RayTraceResult;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.Constants;
+import net.minecraftforge.energy.CapabilityEnergy;
+import net.minecraftforge.energy.EnergyStorage;
+import net.minecraftforge.energy.IEnergyStorage;
 import net.minecraftforge.fluids.*;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -49,7 +44,10 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
     private StructureTemplate.BlockPlace blockStructure;
     public static ArrayList<Filters.changeItemFilter> filter = new ArrayList<>();
 
-    private ItemStackHandler inventory = new ItemStackHandler(131);
+    private ItemStackHandler inventory = new ItemStackHandler(132);
+    private Capability<IEnergyStorage> energyCapability = CapabilityEnergy.ENERGY;
+    public EnergyStorage energy = new EnergyStorage(100000);;
+
     private boolean blockIsBuilding = false;
     private int countBlocks = 0;
     private int counter = 0;
@@ -62,6 +60,11 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
     public int rangeZ = 0;
     public ItemStack needItem = null;
     public String texture = "blue";
+
+    public int movableX = 2;
+    public int movableY = 2;
+    public int movableZ = 2;
+
 
     public void buttonPressed(int id) {
         switch (id) {
@@ -92,6 +95,10 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
         markDirty();
     }
 
+    public int getEnergy() {
+        return (energy.getEnergyStored() * 94 / energy.getMaxEnergyStored());
+    }
+
     private IBlockState getState() {
         return world.getBlockState(pos);
     }
@@ -111,6 +118,16 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
         if(blockStructure.blocks.get(countBlocks).state != null) {
             this.needItem = blockStructure.blocks.get(countBlocks).state.getBlock().getItem(world, null, blockStructure.blocks.get(countBlocks).state);
         }
+    }
+
+    private int energyToPlace() {
+        float basePower = 16;
+        double speedPower = basePower + 20 / (5 - this.inventory.getStackInSlot(129).getCount()); // 25, 26, 27, 31, 41 / correct
+        int memory = this.inventory.getStackInSlot(131).getCount() + 1;
+        double memoryPower = memory * 1.5; // 21
+        double total = (speedPower * memoryPower);
+
+        return (int) total;
     }
 
     private StructureTemplate.BlockPlace getStructure() {
@@ -156,7 +173,11 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
     @SuppressWarnings( "deprecation" )
     @Override
     public void update() {
-        if(inventory.getStackInSlot(130) != ItemStack.EMPTY && inventory.getStackInSlot(130).getItem() == ModItems.MEMORY_CARD || inventory.getStackInSlot(130).getItem() == ModItems.MEMORY_CARD_CREATIVE && inventory.getStackInSlot(130).hasTagCompound() && inventory.getStackInSlot(130).getTagCompound().hasKey("type")) {
+        if(!world.isRemote) {
+            this.sendUpdates();
+        }
+
+        if(inventory.getStackInSlot(130) != ItemStack.EMPTY && inventory.getStackInSlot(130).hasTagCompound() && inventory.getStackInSlot(130).getTagCompound().hasKey("rangeX")) {
             NBTTagCompound nbt = inventory.getStackInSlot(130).getTagCompound();
             int[] range =  this.getRotateStructure(EnumFacing.byName(nbt.getString("facing")), EnumFacing.getFront(this.getBlockMetadata()), nbt.getInteger("rangeX"), nbt.getInteger("rangeY"), nbt.getInteger("rangeZ"));
 
@@ -171,6 +192,7 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
         }
 
         if (this.blockIsBuilding) {
+            this.energy.extractEnergy(2,false);
             int tickCounter = this.getBuildSpeed();
             if (counter == tickCounter) {
                 if (blockStructure.blocks.size() == countBlocks) {
@@ -204,7 +226,7 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
                         }
                         this.memorycardDurability();
                         countBlocks = blockStructure.blocks.size();
-                    } else {
+                    } else if(this.energy.getEnergyStored() != 0) {
                         boolean build;
 
                         if (!inventory.getStackInSlot(130).isEmpty()) {
@@ -221,44 +243,52 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
                             if (!this.removedDurability) {
                                 this.removedDurability = true;
                             }
+
                             if (build) {
                                 boolean skipBlock = true;
                                 this.texture = "red";
-                                for (int slot = 0; slot < inventory.getSlots() - 2; slot++) {
-                                    if (this.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, EnumFacing.NORTH)) {
-                                        this.displayCurrentItem();
-                                        if (!inventory.getStackInSlot(slot).isEmpty()) {
-                                            if (this.haveItem(blockStructure.blocks.get(countBlocks).state, slot)) {
-                                                BlockPos blockPos = new BlockPos(pos).add(blockStructure.blocks.get(countBlocks).x, blockStructure.blocks.get(countBlocks).y, blockStructure.blocks.get(countBlocks).z);
-                                                IBlockState stateBlock = blockStructure.blocks.get(countBlocks).state;
-                                                EnumFacing facing_new = EnumFacing.getFront(this.getBlockMetadata());
-                                                EnumFacing facing_original = blockStructure.facing;
-                                                stateBlock = this.getStateWithRotation(facing_original, facing_new, stateBlock);
-                                                if (this.isSeed) {
-                                                    world.setBlockState(blockPos, stateBlock.getBlock().getDefaultState(), 3);
-                                                } else {
-                                                    world.setBlockState(blockPos, stateBlock, 3);
-                                                    TileEntity tileEntity = world.getTileEntity(blockPos);
-                                                    if (tileEntity != null) {
-                                                        blockStructure.blocks.get(countBlocks).nbtTagCompound.setInteger("x", blockPos.getX());
-                                                        blockStructure.blocks.get(countBlocks).nbtTagCompound.setInteger("y", blockPos.getY());
-                                                        blockStructure.blocks.get(countBlocks).nbtTagCompound.setInteger("z", blockPos.getZ());
-                                                        tileEntity.readFromNBT(blockStructure.blocks.get(countBlocks).nbtTagCompound);
+                                for(int memoryUpgrade = 0;memoryUpgrade <= this.inventory.getStackInSlot(131).getCount();memoryUpgrade++) {
+                                    if (blockStructure.blocks.size() != countBlocks) {
+                                        for (int slot = 0; slot < inventory.getSlots() - 2; slot++) {
+                                            if (this.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, EnumFacing.NORTH)) {
+                                                this.displayCurrentItem();
+                                                if (!inventory.getStackInSlot(slot).isEmpty()) {
+                                                    if (this.haveItem(blockStructure.blocks.get(countBlocks).state, slot)) {
+                                                        if (this.energy.getEnergyStored() >= this.energyToPlace()) {
+                                                            BlockPos blockPos = new BlockPos(pos).add(blockStructure.blocks.get(countBlocks).x + this.movableX, blockStructure.blocks.get(countBlocks).y + this.movableY, blockStructure.blocks.get(countBlocks).z + this.movableZ);
+                                                            IBlockState stateBlock = blockStructure.blocks.get(countBlocks).state;
+                                                            EnumFacing facing_new = EnumFacing.getFront(this.getBlockMetadata());
+                                                            EnumFacing facing_original = blockStructure.facing;
+                                                            stateBlock = this.getStateWithRotation(facing_original, facing_new, stateBlock);
+                                                            if (this.isSeed) {
+                                                                world.setBlockState(blockPos, stateBlock.getBlock().getDefaultState(), 3);
+                                                            } else {
+                                                                world.setBlockState(blockPos, stateBlock, 3);
+                                                                TileEntity tileEntity = world.getTileEntity(blockPos);
+                                                                if (tileEntity != null) {
+                                                                    blockStructure.blocks.get(countBlocks).nbtTagCompound.setInteger("x", blockPos.getX());
+                                                                    blockStructure.blocks.get(countBlocks).nbtTagCompound.setInteger("y", blockPos.getY());
+                                                                    blockStructure.blocks.get(countBlocks).nbtTagCompound.setInteger("z", blockPos.getZ());
+                                                                    tileEntity.readFromNBT(blockStructure.blocks.get(countBlocks).nbtTagCompound);
+                                                                }
+                                                            }
+
+                                                            if (!this.isLiquid) {
+                                                                inventory.extractItem(slot, 1, false);
+                                                            } else {
+                                                                inventory.setStackInSlot(slot, new ItemStack(Items.BUCKET));
+                                                                this.updateWaterTick(blockPos);
+                                                            }
+
+                                                            this.energy.extractEnergy(this.energyToPlace(), false);
+                                                            this.texture = "orange";
+                                                            this.isLiquid = false;
+                                                            skipBlock = false;
+                                                            countBlocks++;
+                                                            break;
+                                                        }
                                                     }
                                                 }
-
-                                                if (!this.isLiquid) {
-                                                    inventory.extractItem(slot, 1, false);
-                                                } else {
-                                                    inventory.setStackInSlot(slot, new ItemStack(Items.BUCKET));
-                                                    this.updateWaterTick(blockPos);
-                                                }
-
-                                                this.texture = "orange";
-                                                this.isLiquid = false;
-                                                skipBlock = false;
-                                                countBlocks++;
-                                                break;
                                             }
                                         }
                                     }
@@ -273,12 +303,19 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
                         } else {
                             this.blockIsBuilding = false;
                         }
+                    } else {
+                        this.needItem = null;
+                        this.texture = "grey";
                     }
                 }
                 counter = 0;
             } else {
                 counter++;
             }
+        } else if(this.energy.getEnergyStored() == 0) {
+            this.texture = "grey";
+        } else {
+            this.texture = "blue";
         }
     }
 
@@ -464,7 +501,6 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
             this.isSeed = true;
         }
 
-        System.out.println("no items");
         return inventory.getStackInSlot(slot).isItemEqual(state.getBlock().getItem(world, null, state));
     }
 
@@ -479,10 +515,22 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
     }
 
     @Override
+    public NBTTagCompound writeToNBT(NBTTagCompound compound) {
+        compound.setTag("inventory", inventory.serializeNBT());
+        compound.setBoolean("checked", this.checked);
+        compound.setTag("energy", this.energyCapability.writeNBT(this.energy, null));
+
+        return super.writeToNBT(compound);
+    }
+
+    @Override
     public void readFromNBT(NBTTagCompound compound) {
         super.readFromNBT(compound);
         inventory.deserializeNBT(compound.getCompoundTag("inventory"));
         this.checked = compound.getBoolean("checked");
+        if(compound.hasKey("energy")) {
+            this.energyCapability.readNBT(this.energy, null, compound.getTag("energy"));
+        }
     }
 
     @Override
@@ -503,19 +551,23 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
     }
 
     @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound compound) {
-        compound.setTag("inventory", inventory.serializeNBT());
-        compound.setBoolean("checked", this.checked);
-        return super.writeToNBT(compound);
-    }
-
-    @Override
     public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
-        return capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY || super.hasCapability(capability, facing);
+        if(capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY)
+            return true;
+        if(capability == CapabilityEnergy.ENERGY)
+            return true;
+        return super.hasCapability(capability, facing);
     }
 
     @Override
     public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
-        return capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY ? (T)inventory : super.getCapability(capability, facing);
+        if(capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY)
+            return (T) this.inventory;
+        if(capability == CapabilityEnergy.ENERGY && facing != EnumFacing.DOWN)
+            return (T) this.energy;
+        return super.getCapability(capability, facing);
     }
+
+
+
 }

@@ -20,15 +20,17 @@ public class RenderBuilder extends TileEntitySpecialRenderer<TileEntityBuilder> 
     @Override
     public void render(TileEntityBuilder te, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
         super.render(te, x, y, z, partialTicks, destroyStage, alpha);
+
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder bufferbuilder = tessellator.getBuffer();
+
         GL11.glPushMatrix();
         GL11.glPushAttrib(GL11.GL_ENABLE_BIT);
-        GL11.glDepthMask(false);
+        
         GL11.glDisable(GL11.GL_TEXTURE_2D);
         GlStateManager.translate(x, y, z);
         Color color = new Color(255, 255, 0, 50);
         GL11.glColor4d(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder bufferbuilder = tessellator.getBuffer();
         GL11.glLineWidth(3F);
         bufferbuilder.begin(GL11.GL_LINES, DefaultVertexFormats.POSITION_COLOR);
         double posX = te.rangeX;
@@ -55,57 +57,62 @@ public class RenderBuilder extends TileEntitySpecialRenderer<TileEntityBuilder> 
                 exPosZ = 1;
                 break;
             default:
-                System.out.println("default");
                 break;
         }
 
-
         if(posX != 0 || posY != 0 || posZ != 0) {
             //First block
-            bufferbuilder.pos(exPosX + posX + width, width, exPosZ + width).color(255, 10, 10, 255).endVertex(); // right end
-            bufferbuilder.pos(exPosX + width, width, exPosZ + width).color(255, 10, 10, 255).endVertex(); // right start
+            //Blue
+            bufferbuilder.pos(te.movableX + exPosX + posX + width, te.movableY + width, te.movableZ + exPosZ + width).color(0, 0, 255, 255).endVertex(); // right end
+            bufferbuilder.pos(te.movableX + exPosX + width, te.movableY + width, te.movableZ + exPosZ + width).color(0, 0, 255, 255).endVertex(); // right start
 
-            bufferbuilder.pos(exPosX + posX + width, posY + width, exPosZ + width).color(255, 10, 10, 255).endVertex(); // right end
-            bufferbuilder.pos(exPosX + width, posY  + width, exPosZ + width).color(255, 10, 10, 255).endVertex(); // right start
+            bufferbuilder.pos(te.movableX + exPosX + posX + width, posY + te.movableY + width, te.movableZ + exPosZ + width).color(105,105,105, 255).endVertex(); // right end
+            bufferbuilder.pos(te.movableX + exPosX + width, posY  + te.movableY + width, te.movableZ + exPosZ + width).color(105,105,105, 255).endVertex(); // right start
 
-            bufferbuilder.pos(exPosX + posX  + width, width, exPosZ + width).color(255, 10, 10, 255).endVertex(); // right end
-            bufferbuilder.pos(exPosX + posX  + width, posY  + width, exPosZ + width).color(255, 10, 10, 255).endVertex(); // right end
+            bufferbuilder.pos(te.movableX + exPosX + posX  + width, te.movableY + width, te.movableZ + exPosZ + width).color(105,105,105, 255).endVertex(); // right end
+            bufferbuilder.pos(te.movableX + exPosX + posX  + width, posY  + te.movableY + width, te.movableZ + exPosZ + width).color(105,105,105, 255).endVertex(); // right end
 
-            bufferbuilder.pos(exPosX + width, width, exPosZ + width).color(255, 10, 10, 255).endVertex(); // right end
-            bufferbuilder.pos(exPosX + width, posY + width, exPosZ + width).color(255, 10, 10, 255).endVertex(); // right end
+            //Green
+            bufferbuilder.pos(te.movableX + exPosX + width, te.movableY + width, te.movableZ + exPosZ + width).color(0, 255, 0, 255).endVertex(); // right end
+            bufferbuilder.pos(te.movableX + exPosX + width, posY + te.movableY + width, te.movableZ + exPosZ + width).color(0, 255, 0, 255).endVertex(); // right end
 
             //Second block
-            bufferbuilder.pos(exPosX + posX  + width, width, exPosZ + width + posZ).color(255, 10, 10, 255).endVertex(); // right end
-            bufferbuilder.pos(exPosX + posX  + width, posY  + width, exPosZ + width + posZ).color(255, 10, 10, 255).endVertex(); // right end
+            bufferbuilder.pos(te.movableX + exPosX + posX  + width, te.movableY + width, te.movableZ + exPosZ + width + posZ).color(105,105,105, 255).endVertex(); // right end
+            bufferbuilder.pos(te.movableX + exPosX + posX  + width, posY  + te.movableY + width, te.movableZ + exPosZ + width + posZ).color(105,105,105, 255).endVertex(); // right end
 
-            bufferbuilder.pos(exPosX + width, width, exPosZ + width + posZ).color(255, 10, 10, 255).endVertex(); // right end
-            bufferbuilder.pos(exPosX + width, posY  + width, exPosZ + width + posZ).color(255, 10, 10, 255).endVertex(); // right end
+            bufferbuilder.pos(te.movableX + exPosX + width, te.movableY + width, te.movableZ + exPosZ + width + posZ).color(105,105,105, 255).endVertex(); // right end
+            bufferbuilder.pos(te.movableX + exPosX + width, posY  + te.movableY + width, te.movableZ + exPosZ + width + posZ).color(105,105,105, 255).endVertex(); // right end
 
-            bufferbuilder.pos(exPosX + posX + width, width, exPosZ + width + posZ).color(255, 10, 10, 255).endVertex(); // right end
-            bufferbuilder.pos(exPosX + width, width, exPosZ + width + posZ).color(255, 10, 10, 255).endVertex(); // right start
+            bufferbuilder.pos(te.movableX + exPosX + posX + width, te.movableY + width, te.movableZ + exPosZ + width + posZ).color(105,105,105, 255).endVertex(); // right end
+            bufferbuilder.pos(te.movableX + exPosX + width, te.movableY + width, te.movableZ + exPosZ + width + posZ).color(105,105,105, 255).endVertex(); // right start
 
-            bufferbuilder.pos(exPosX + posX + width, posY + width, exPosZ + width + posZ).color(255, 10, 10, 255).endVertex(); // right end
-            bufferbuilder.pos(exPosX + width, posY  + width, exPosZ + width + posZ).color(255, 10, 10, 255).endVertex(); // right start
+            bufferbuilder.pos(te.movableX + exPosX + posX + width, posY + te.movableY + width, te.movableZ + exPosZ + width + posZ).color(105,105,105, 255).endVertex(); // right end
+            bufferbuilder.pos(te.movableX + exPosX + width, posY  + te.movableY + width, te.movableZ + exPosZ + width + posZ).color(105,105,105, 255).endVertex(); // right start
 
             //Connector block
-            bufferbuilder.pos(exPosX + width, width, exPosZ + posZ + width).color(255, 10, 10, 255).endVertex(); // right end
-            bufferbuilder.pos(exPosX + width, width, exPosZ + width).color(255, 10, 10, 255).endVertex(); // right start
+            //Red
+            bufferbuilder.pos(te.movableX + exPosX + width, te.movableY + width, te.movableZ + exPosZ + posZ + width).color(255, 0, 0, 255).endVertex(); // right end
+            bufferbuilder.pos(te.movableX + exPosX + width, te.movableY + width, te.movableZ + exPosZ + width).color(255, 0, 0, 255).endVertex(); // right start
 
-            bufferbuilder.pos(exPosX + posX + width, width, exPosZ + posZ + width).color(255, 10, 10, 255).endVertex(); // right end
-            bufferbuilder.pos(exPosX + posX + width, width, exPosZ + width).color(255, 10, 10, 255).endVertex(); // right start
+            bufferbuilder.pos(te.movableX + exPosX + posX + width, te.movableY + width, te.movableZ + exPosZ + posZ + width).color(105,105,105, 255).endVertex(); // right end
+            bufferbuilder.pos(te.movableX + exPosX + posX + width, te.movableY + width, te.movableZ + exPosZ + width).color(105,105,105, 255).endVertex(); // right start
 
-            bufferbuilder.pos(exPosX + width, posY + width, exPosZ + posZ + width).color(255, 10, 10, 255).endVertex(); // right end
-            bufferbuilder.pos(exPosX + width, posY + width, exPosZ + width).color(255, 10, 10, 255).endVertex(); // right start
+            bufferbuilder.pos(te.movableX + exPosX + width, posY + te.movableY + width, te.movableZ + exPosZ + posZ + width).color(105,105,105, 255).endVertex(); // right end
+            bufferbuilder.pos(te.movableX + exPosX + width, posY + te.movableY + width, te.movableZ + exPosZ + width).color(105,105,105, 255).endVertex(); // right start
 
-            bufferbuilder.pos(exPosX + posX + width, posY + width, exPosZ + posZ + width).color(255, 10, 10, 255).endVertex(); // right end
-            bufferbuilder.pos(exPosX + posX + width, posY + width, exPosZ + width).color(255, 10, 10, 255).endVertex(); // right start
+            bufferbuilder.pos(te.movableX + exPosX + posX + width, posY + te.movableY + width, te.movableZ + exPosZ + posZ + width).color(105,105,105, 255).endVertex(); // right end
+            bufferbuilder.pos(te.movableX + exPosX + posX + width, posY + te.movableY + width, te.movableZ + exPosZ + width).color(105,105,105, 255).endVertex(); // right start
 
         }
         tessellator.draw();
 
+
+        // clean up GL crap
         GL11.glColor4f(1, 1, 1, 1);
-        GL11.glPopAttrib();
-        GL11.glPopMatrix();
+        GlStateManager.enableLighting();
+
+        GlStateManager.popAttrib();
+        GlStateManager.popMatrix();
 
         if(te.texture != null) {
             // setup GL crap
@@ -202,38 +209,17 @@ public class RenderBuilder extends TileEntitySpecialRenderer<TileEntityBuilder> 
 
 
             if(te.needItem != null) {
-                EntityItem entityItem = new EntityItem(Minecraft.getMinecraft().world, 0, 0, 0, te.needItem);
-                entityItem.hoverStart = 0F;
+                EntityItem entityItem0 = new EntityItem(Minecraft.getMinecraft().world, 0, 0, 0, te.needItem);
+                entityItem0.hoverStart = 0F;
                 GlStateManager.pushMatrix();
                 {
                     GlStateManager.translate(x, y, z);
                     GlStateManager.translate(0.5, 1.25, 0.5);
                     GlStateManager.rotate((te.getWorld().getTotalWorldTime()+ partialTicks) * 3f, 0f, 1f, 0f);
-                    Minecraft.getMinecraft().getRenderManager().renderEntity(entityItem, 0, -1,0, 0F, 0F, false);
-
-
-//
-//                GlStateManager.pushMatrix();
-//                {
-//                Minecraft.getMinecraft().getRenderManager().renderEntity(entityItem, 0, -1,-0.1, 0F, 0F, false);
-//                }
-//                GlStateManager.popMatrix();
-//
-//                GlStateManager.pushMatrix();
-//                {
-//                GlStateManager.rotate( 50f, 0f, 1f, 0f);
-//                Minecraft.getMinecraft().getRenderManager().renderEntity(entityItem, 0, -1,0.25, 0F, 0F, false);
-//                }
-//                GlStateManager.popMatrix();
-//
-//                GlStateManager.pushMatrix();
-//                {
-//                GlStateManager.rotate( 50f, 0f, 1f, 0f);
-//                Minecraft.getMinecraft().getRenderManager().renderEntity(entityItem, -0.25, -1,0, 0F, 0F, false);
-//                }
-//                GlStateManager.popMatrix();
+                    Minecraft.getMinecraft().getRenderManager().renderEntity(entityItem0, 0, -1,0, 0F, 0F, false);
                 }
                 GlStateManager.popMatrix();
+                GL11.glColor4f(1, 1, 1, 1);
             }
     }
 

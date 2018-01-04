@@ -49,58 +49,58 @@ public class RenderAreaLine extends TileEntitySpecialRenderer<TileEntityWorldMar
 
         if(x == 0 || y == 0 || z == 0) {
             if(z != 0) {
-                buffer.pos(width, width, z + width).color(255, 10, 10, 255).endVertex(); // right end
-                buffer.pos(width, width, width).color(255, 10, 10, 255).endVertex(); // right start
+                buffer.pos(width, width, z + width).color(255, 0, 0, 255).endVertex(); // right end
+                buffer.pos(width, width, width).color(255, 0, 0, 255).endVertex(); // right start
             }
             if(y != 0) {
-                buffer.pos(width, width, width).color(255, 10, 10, 255).endVertex(); // right end
-                buffer.pos(width, y + width, width).color(255, 10, 10, 255).endVertex(); // right end
+                buffer.pos(width, width, width).color(0, 255, 0, 255).endVertex(); // right end
+                buffer.pos(width, y + width, width).color(0, 255, 0, 255).endVertex(); // right end
             }
             if(x != 0) {
-                buffer.pos(x + width, width, width).color(255, 10, 10, 255).endVertex(); // right end
-                buffer.pos(width, width, width).color(255, 10, 10, 255).endVertex(); // right start
+                buffer.pos(x + width, width, width).color(0, 0, 255, 255).endVertex(); // right end
+                buffer.pos(width, width, width).color(0, 0, 255, 255).endVertex(); // right start
             }
         } else {
 
 
             //First block
-            buffer.pos(x + width, width, width).color(255, 10, 10, 255).endVertex(); // right end
-            buffer.pos(width, width, width).color(255, 10, 10, 255).endVertex(); // right start
+            buffer.pos(x + width, width, width).color(0, 0, 255, 255).endVertex(); // right end
+            buffer.pos(width, width, width).color(0, 10, 255, 255).endVertex(); // right start
 
-            buffer.pos(x + width, y + width, width).color(255, 10, 10, 255).endVertex(); // right end
-            buffer.pos(width, y  + width, width).color(255, 10, 10, 255).endVertex(); // right start
+            buffer.pos(x + width, y + width, width).color(105,105,105, 255).endVertex(); // right end
+            buffer.pos(width, y  + width, width).color(105,105,105, 255).endVertex(); // right start
 
-            buffer.pos(x  + width, width, width).color(255, 10, 10, 255).endVertex(); // right end
-            buffer.pos(x  + width, y  + width, width).color(255, 10, 10, 255).endVertex(); // right end
+            buffer.pos(x  + width, width, width).color(105,105,105, 255).endVertex(); // right end
+            buffer.pos(x  + width, y  + width, width).color(105,105,105, 255).endVertex(); // right end
 
-            buffer.pos(width, width, width).color(255, 10, 10, 255).endVertex(); // right end
-            buffer.pos(width, y + width, width).color(255, 10, 10, 255).endVertex(); // right end
+            buffer.pos(width, width, width).color(0, 255, 0, 255).endVertex(); // right end
+            buffer.pos(width, y + width, width).color(0, 255, 0, 255).endVertex(); // right end
 
             //Second block
-            buffer.pos(x  + width, width, width + z).color(255, 10, 10, 255).endVertex(); // right end
-            buffer.pos(x  + width, y  + width, width + z).color(255, 10, 10, 255).endVertex(); // right end
+            buffer.pos(x  + width, width, width + z).color(105,105,105, 255).endVertex(); // right end
+            buffer.pos(x  + width, y  + width, width + z).color(105,105,105, 255).endVertex(); // right end
 
-            buffer.pos(width, width, width + z).color(255, 10, 10, 255).endVertex(); // right end
-            buffer.pos(width, y  + width, width + z).color(255, 10, 10, 255).endVertex(); // right end
+            buffer.pos(width, width, width + z).color(105,105,105, 255).endVertex(); // right end
+            buffer.pos(width, y  + width, width + z).color(105,105,105, 255).endVertex(); // right end
 
-            buffer.pos(x + width, width, width + z).color(255, 10, 10, 255).endVertex(); // right end
-            buffer.pos(width, width, width + z).color(255, 10, 10, 255).endVertex(); // right start
+            buffer.pos(x + width, width, width + z).color(105,105,105, 255).endVertex(); // right end
+            buffer.pos(width, width, width + z).color(105,105,105, 255).endVertex(); // right start
 
-            buffer.pos(x + width, y + width, width + z).color(255, 10, 10, 255).endVertex(); // right end
-            buffer.pos(width, y  + width, width + z).color(255, 10, 10, 255).endVertex(); // right start
+            buffer.pos(x + width, y + width, width + z).color(105,105,105, 255).endVertex(); // right end
+            buffer.pos(width, y  + width, width + z).color(105,105,105, 255).endVertex(); // right start
 
             //Connector block
-            buffer.pos(width, width, z + width).color(255, 10, 10, 255).endVertex(); // right end
-            buffer.pos(width, width, width).color(255, 10, 10, 255).endVertex(); // right start
+            buffer.pos(width, width, z + width).color(255, 0, 0, 255).endVertex(); // right end
+            buffer.pos(width, width, width).color(255, 0, 0, 255).endVertex(); // right start
 
-            buffer.pos(x + width, width, z + width).color(255, 10, 10, 255).endVertex(); // right end
-            buffer.pos(x + width, width, width).color(255, 10, 10, 255).endVertex(); // right start
+            buffer.pos(x + width, width, z + width).color(105,105,105, 255).endVertex(); // right end
+            buffer.pos(x + width, width, width).color(105,105,105, 255).endVertex(); // right start
 
-            buffer.pos(width, y + width, z + width).color(255, 10, 10, 255).endVertex(); // right end
-            buffer.pos(width, y + width, width).color(255, 10, 10, 255).endVertex(); // right start
+            buffer.pos(width, y + width, z + width).color(105,105,105, 255).endVertex(); // right end
+            buffer.pos(width, y + width, width).color(105,105,105, 255).endVertex(); // right start
 
-            buffer.pos(x + width, y + width, z + width).color(255, 10, 10, 255).endVertex(); // right end
-            buffer.pos(x + width, y + width, width).color(255, 10, 10, 255).endVertex(); // right start
+            buffer.pos(x + width, y + width, z + width).color(105,105,105, 255).endVertex(); // right end
+            buffer.pos(x + width, y + width, width).color(105,105,105, 255).endVertex(); // right start
 
         }
         tessellator.draw();

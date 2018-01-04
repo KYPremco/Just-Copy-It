@@ -87,6 +87,14 @@ public class StructureTemplate {
                         break;
                     }
                 }
+                for(String s : tagKeys) {
+                    String searchInsideKeys = tagCompound.getTag(s).toString();
+
+                    if(searchInsideKeys.toLowerCase().contains("loot") || s.toLowerCase().contains("loot")) {
+                        tagCompound.removeTag(s);
+                        break;
+                    }
+                }
 
                 tagCompound.removeTag("x");
                 tagCompound.removeTag("y");

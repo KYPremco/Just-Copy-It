@@ -19,13 +19,13 @@ public class ContainerBuilder extends Container {
             IItemHandler inventory = tileEntityBuilder.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, EnumFacing.NORTH);
 
             // Memory slot
-            addSlotToContainer(new SlotMemory(inventory, 130,192, 148));
+            addSlotToContainer(new SlotMemory(inventory, 130,212, 148));
 
             // SpeedUpgrade slot
-            addSlotToContainer(new SlotSpeedUpgrade(inventory, 129, 48, 148));
+            addSlotToContainer(new SlotSpeedUpgrade(inventory, 129, 212, 171));
 
             // Memory upgrade
-            //TODO: Memory upgrade
+            addSlotToContainer(new SlotMemoryUpgrade(inventory, 131, 212,191));
 
 
             // Container inventory
@@ -63,7 +63,7 @@ public class ContainerBuilder extends Container {
             ItemStack stackInSlot = slot.getStack();
             stack = stackInSlot.copy();
 
-            int containerSlots = 93;
+            int containerSlots = 94;
 
 
             if(index < containerSlots) {

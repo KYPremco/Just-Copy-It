@@ -1,0 +1,31 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "GPG",
+    "MDL",
+    "CCC"
+  ],
+  "key": {
+    "C": {
+      "item": "minecraft:coal_block"
+    },
+    "G": {
+      "item": "minecraft:gold_ingot"
+    },
+    "L": {
+      "item": "kypjci:lens"
+    },
+    "D": {
+      "item": "minecraft:diamond"
+    },
+    "M": {
+      "item": "kypjci:memory"
+    },
+    "P": {
+      "item": "kypjci:processor"
+    }
+  },
+  "result": {
+    "item": "kypjci:structure_scanner"
+  }
+}

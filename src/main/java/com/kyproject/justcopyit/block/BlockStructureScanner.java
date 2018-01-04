@@ -45,8 +45,8 @@ public class BlockStructureScanner extends BlockBase implements ITileEntityProvi
             if (te != null && te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, EnumFacing.NORTH)) {
                 IItemHandler inventory = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, EnumFacing.NORTH);
                 if (inventory != null) {
-                    if (inventory.getStackInSlot(36).isEmpty()) {
-                        inventory.insertItem(36, playerIn.inventory.getCurrentItem().copy().splitStack(1), false);
+                    if (inventory.getStackInSlot(0).isEmpty()) {
+                        inventory.insertItem(0, playerIn.inventory.getCurrentItem().copy().splitStack(1), false);
                         playerIn.inventory.getCurrentItem().splitStack(1);
                         return true;
                     }
