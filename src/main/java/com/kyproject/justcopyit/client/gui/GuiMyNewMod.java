@@ -59,7 +59,7 @@ public class GuiMyNewMod extends GuiScreen {
         fontRenderer.drawSplitString(stringPageText[currentPage], centerX + 18, centerY + 18,90, 0x000);
     }
 
-    public void updateButtons() {
+    private void updateButtons() {
         if(currentPage < bookTotalPages - 1) {
             buttonNext.visible = true;
         } else {

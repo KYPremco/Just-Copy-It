@@ -47,7 +47,6 @@ public class JustCopyIt {
     @EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         logger = event.getModLog();
-        TileEntityBuilder tileEntityBuilder = new TileEntityBuilder();
         StructureTemplate structureTemplate = new StructureTemplate();
         Filters filters = new Filters();
 
@@ -57,7 +56,7 @@ public class JustCopyIt {
         }
         filters.createFilter();
 
-        TileEntityBuilder.filter = tileEntityBuilder.readJsonFilter();
+        TileEntityBuilder.filter = filters.readJsonFilter();
         structureTemplate.loadBlockItemFilter();
 
 

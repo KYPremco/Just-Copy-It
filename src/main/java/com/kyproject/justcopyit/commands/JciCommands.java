@@ -1,6 +1,7 @@
 package com.kyproject.justcopyit.commands;
 
 import com.kyproject.justcopyit.JustCopyIt;
+import com.kyproject.justcopyit.init.Filters;
 import com.kyproject.justcopyit.init.ModItems;
 import com.kyproject.justcopyit.templates.StructureTemplate;
 import com.kyproject.justcopyit.tileentity.TileEntityBuilder;
@@ -66,8 +67,8 @@ public class JciCommands extends CommandBase {
     }
 
     private void reloadFitler(ICommandSender sender) {
-        TileEntityBuilder tileEntityBuilder = new TileEntityBuilder();
-        TileEntityBuilder.filter = tileEntityBuilder.readJsonFilter();
+        Filters filter = new Filters();
+        TileEntityBuilder.filter = filter.readJsonFilter();
         StructureTemplate structureTemplate = new StructureTemplate();
         structureTemplate.loadBlockItemFilter();
 
@@ -105,12 +106,12 @@ public class JciCommands extends CommandBase {
                     ItemStack item;
                     if(args.length > 3) {
                         if(args[3].equals("true")) {
-                            item = new ItemStack(ModItems.MEMORY_CARD_CREATIVE);
+                            item = new ItemStack(ModItems.BLUEPRINT_CREATIVE);
                         } else {
-                            item = new ItemStack(ModItems.MEMORY_CARD);
+                            item = new ItemStack(ModItems.BLUEPRINT);
                         }
                     } else {
-                        item = new ItemStack(ModItems.MEMORY_CARD);
+                        item = new ItemStack(ModItems.BLUEPRINT);
                     }
 
                     item.setTagCompound(nbt);

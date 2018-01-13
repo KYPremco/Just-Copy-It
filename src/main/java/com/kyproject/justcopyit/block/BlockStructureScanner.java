@@ -41,7 +41,7 @@ public class BlockStructureScanner extends BlockBase implements ITileEntityProvi
     public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
         TileEntityScanner te = (TileEntityScanner) worldIn.getTileEntity(pos);
 
-        if(playerIn.inventory.getCurrentItem().getItem().equals(ModItems.MEMORY_CARD)) {
+        if(playerIn.inventory.getCurrentItem().getItem().equals(ModItems.BLUEPRINT)) {
             if (te != null && te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, EnumFacing.NORTH)) {
                 IItemHandler inventory = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, EnumFacing.NORTH);
                 if (inventory != null) {

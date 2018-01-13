@@ -12,6 +12,6 @@ public class CreativeTabJustCopyIt extends CreativeTabs {
 
     @Override
     public ItemStack getTabIconItem() {
-        return new ItemStack(ModItems.MEMORY_CARD);
+        return new ItemStack(ModItems.BLUEPRINT);
     }
 }

@@ -3,12 +3,15 @@ package com.kyproject.justcopyit.tileentity;
 import com.kyproject.justcopyit.init.ModItems;
 import com.kyproject.justcopyit.templates.StructureTemplate;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.Minecraft;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTUtil;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.common.capabilities.Capability;
@@ -21,17 +24,17 @@ public class TileEntityScanner extends TileEntity{
 
     private ItemStackHandler inventory = new ItemStackHandler(37);
 
-    public void buttonPressed(int id) {
+    public void buttonPressed(int id, boolean op) {
         switch (id) {
             case 0:
-                this.createStructure();
+                this.createStructure(op);
                 break;
             default:
                 break;
         }
     }
 
-    private void createStructure() {
+    private void createStructure(boolean op) {
         StructureTemplate structureTemplate = new StructureTemplate();
 
         EnumFacing forward = EnumFacing.getFront(this.getBlockMetadata());
@@ -60,9 +63,9 @@ public class TileEntityScanner extends TileEntity{
             if (!inventory.getStackInSlot(0).isEmpty()) {
 
                 // Creating the structure arrayList
-                for (int x = this.rangeCalculator(rangeX)[0]; x < this.rangeCalculator(rangeX)[1]; x++) {
-                    for (int z = this.rangeCalculator(rangeZ)[0]; z < this.rangeCalculator(rangeZ)[1]; z++) {
-                        for (int y = this.rangeCalculator(rangeY)[0]; y < this.rangeCalculator(rangeY)[1]; y++) {
+                for (int y = this.rangeCalculator(rangeY)[0]; y < this.rangeCalculator(rangeY)[1]; y++) {
+                    for (int x = this.rangeCalculator(rangeX)[0]; x < this.rangeCalculator(rangeX)[1]; x++) {
+                        for (int z = this.rangeCalculator(rangeZ)[0]; z < this.rangeCalculator(rangeZ)[1]; z++) {
                             if (!world.isAirBlock(pos.add(x + fX, y, z + fZ))) {
                                 if (world.getBlockState(pos.add(x + fX, y, z + fZ)).getMaterial().isLiquid()) {
                                     if (world.getBlockState(pos.add(x + fX, y, z + fZ)).getBlock().getMetaFromState(world.getBlockState(pos.add(x + fX, y, z + fZ)).getActualState(world, pos.add(x + fX, y, z + fZ))) == 0) {
@@ -83,8 +86,9 @@ public class TileEntityScanner extends TileEntity{
 
                 StructureTemplate.BlockPlace structure = structureTemplate.getStructure();
 
+
                 //Saving the data to the memory card inside the slot
-                if (inventory.getStackInSlot(0).getItem().equals(ModItems.MEMORY_CARD)) {
+                if (inventory.getStackInSlot(0).getItem().equals(ModItems.BLUEPRINT) || (inventory.getStackInSlot(0).getItem().equals(ModItems.BLUEPRINT_CREATIVE) && op)) {
                     NBTTagCompound nbt;
                     ItemStack stack = inventory.getStackInSlot(0);
 

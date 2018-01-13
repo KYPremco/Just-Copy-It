@@ -14,6 +14,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemBucket;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
@@ -21,6 +22,9 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraftforge.fluids.FluidUtil;
+import net.minecraftforge.fluids.UniversalBucket;
+import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 
@@ -39,9 +43,9 @@ public class BlockStructureBuilder extends BlockBase implements ITileEntityProvi
     public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
         TileEntityBuilder te = (TileEntityBuilder) worldIn.getTileEntity(pos);
 
-        if(playerIn.inventory.getCurrentItem().getItem().equals(ModItems.MEMORY_CARD)) {
-            if (te != null && te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, EnumFacing.NORTH)) {
-                IItemHandler inventory = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, EnumFacing.NORTH);
+        if(playerIn.inventory.getCurrentItem().getItem().equals(ModItems.BLUEPRINT)) {
+            if (te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null)) {
+                IItemHandler inventory = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
                 if (inventory != null) {
                     if (inventory.getStackInSlot(130).isEmpty()) {
                         inventory.insertItem(130, playerIn.inventory.getCurrentItem().copy().splitStack(1), false);
@@ -52,8 +56,12 @@ public class BlockStructureBuilder extends BlockBase implements ITileEntityProvi
             }
         }
 
-        if (te != null && te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, EnumFacing.NORTH)) {
-            playerIn.openGui(JustCopyIt.instance, GuiHandler.GUI_BUILDER_CONTAINER, worldIn, pos.getX(), pos.getY(), pos.getZ());
+        if(te.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, null) && playerIn.inventory.getCurrentItem().getItem() instanceof ItemBucket || playerIn.inventory.getCurrentItem().getItem() instanceof UniversalBucket) {
+            FluidUtil.interactWithFluidHandler(playerIn, hand, te.fluidTank);
+        } else {
+            if (te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null)) {
+                playerIn.openGui(JustCopyIt.instance, GuiHandler.GUI_BUILDER_CONTAINER, worldIn, pos.getX(), pos.getY(), pos.getZ());
+            }
         }
 
         return true;

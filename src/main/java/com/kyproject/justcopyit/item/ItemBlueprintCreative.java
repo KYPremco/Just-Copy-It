@@ -13,11 +13,10 @@ import net.minecraftforge.common.util.Constants;
 
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Objects;
 
-public class ItemMemoryCard extends ItemBase {
+public class ItemBlueprintCreative extends ItemBase {
 
-    public ItemMemoryCard(String name) {
+    public ItemBlueprintCreative(String name) {
         super(name);
         setMaxStackSize(64);
     }
@@ -26,19 +25,19 @@ public class ItemMemoryCard extends ItemBase {
     public void addInformation(ItemStack stack, @Nullable World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
         if (stack.hasTagCompound() && stack.getTagCompound().hasKey("type"))
         {
-            if(Objects.equals(stack.getTagCompound().getString("type"), "card")) {
-                tooltip.add("Blocks: " + stack.getTagCompound().getTagList("blocks", Constants.NBT.TAG_COMPOUND).tagCount());
-            } else {
-                if(stack.getTagCompound() != null) {
-                    NBTTagCompound nbt = stack.getTagCompound();
-                    tooltip.add("Name: " + nbt.getString("name"));
-                    if(nbt.hasKey("durability")) {
-                        if(nbt.getInteger("durability") > 0) {
-                            tooltip.add("Durability: " + nbt.getInteger("durability"));
-                        }
+            if(stack.getTagCompound() != null) {
+                NBTTagCompound nbt = stack.getTagCompound();
+                tooltip.add("Name: " + nbt.getString("name"));
+                if(nbt.hasKey("durability")) {
+                    if(nbt.getInteger("durability") > 0) {
+                        tooltip.add("Durability: " + nbt.getInteger("durability"));
                     }
-                    tooltip.add("Blocks: " + nbt.getTagList("blocks", Constants.NBT.TAG_COMPOUND).tagCount());
                 }
+                tooltip.add("Blocks: " + nbt.getTagList("blocks", Constants.NBT.TAG_COMPOUND).tagCount());
+
+            } else {
+                NBTTagCompound nbt = stack.getTagCompound();
+                tooltip.add(nbt.getString("name"));
             }
         } else {
             tooltip.add("Empty");

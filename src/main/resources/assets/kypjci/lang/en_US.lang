@@ -27,3 +27,6 @@ tile.scanner_container.copy=Copy
 #BuilderGui
 tile.builder_container.name=Builder
 tile.builder_container.build=Build
+tile.builder_container.destroy=Break
+tile.builder_container.skip=Skip missing blocks
+tile.builder_container.overwrite=Overwrite blocks

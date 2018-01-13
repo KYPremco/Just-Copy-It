@@ -26,6 +26,6 @@ public class SlotMemory extends SlotItemHandler {
 
     @Override
     public boolean isItemValid(@Nonnull ItemStack stack) {
-        return stack.getItem() == MEMORY_CARD || stack.getItem() == MEMORY_CARD_CREATIVE;
+        return stack.getItem() == BLUEPRINT || stack.getItem() == BLUEPRINT_CREATIVE;
     }
 }

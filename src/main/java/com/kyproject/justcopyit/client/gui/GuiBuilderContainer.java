@@ -3,7 +3,6 @@ package com.kyproject.justcopyit.client.gui;
 import com.kyproject.justcopyit.JustCopyIt;
 import com.kyproject.justcopyit.client.gui.GuiButtons.GuiButtonCheck;
 import com.kyproject.justcopyit.client.gui.GuiButtons.GuiButtonMedium;
-import com.kyproject.justcopyit.client.gui.GuiButtons.GuiButtonUnchecked;
 import com.kyproject.justcopyit.container.builderContainer.ContainerBuilder;
 import com.kyproject.justcopyit.network.MessageHandleGuiBuilderButton;
 import com.kyproject.justcopyit.network.NetworkHandler;
@@ -27,13 +26,14 @@ public class GuiBuilderContainer extends GuiContainer {
     private static final ResourceLocation texture = new ResourceLocation(JustCopyIt.MODID, "textures/gui/buildergui.png");
     private static final ResourceLocation energytex = new ResourceLocation(JustCopyIt.MODID, "textures/gui/buttons.png");
 
-    GuiButtonMedium builderLoadButton;
-    GuiButtonCheck checkButton;
+    private GuiButtonMedium buttonMedium;
+    private GuiButtonCheck checkButton;
+    private GuiButtonCheck checkButtonOverwrite;
 
     private TileEntityBuilder te;
 
 
-    final int BUTTONLOAD = 1, CHECK = 2;
+    private final int BUTTONSTART = 1, CHECK = 2, BUTTONDEMOLISH = 3, BUTTONOVERWRITE = 14;
 
     public GuiBuilderContainer(InventoryPlayer player, TileEntityBuilder tileEntityBuilder) {
         super(new ContainerBuilder(player, tileEntityBuilder));
@@ -50,18 +50,22 @@ public class GuiBuilderContainer extends GuiContainer {
 
         int centerX = (width - xSize) / 2;
         int centerY = (height - ySize) / 2;
-        List<String> tooltip = new ArrayList<>();
-        tooltip.add("Skip missing blocks");
-        drawTooltip(tooltip, mouseX, mouseY, centerX + 182, centerY + 72, 16,16);
+        List<String> skip = new ArrayList<>();
+        skip.add(new TextComponentTranslation("tile.builder_container.skip").getFormattedText());
+        drawTooltip(skip, mouseX, mouseY, centerX + 201, centerY + 150, 18,18);
+        List<String> overwrite = new ArrayList<>();
+        overwrite.add(new TextComponentTranslation("tile.builder_container.overwrite").getFormattedText());
+        drawTooltip(overwrite, mouseX, mouseY, centerX + 221, centerY + 150, 18,18);
         List<String> energy = new ArrayList<>();
         energy.add(NumberFormat.getNumberInstance(Locale.US).format(te.energy.getEnergyStored()) + " / " + NumberFormat.getNumberInstance(Locale.US).format(te.energy.getMaxEnergyStored()) + " RF");
-        this.drawTooltip(energy, mouseX, mouseY, guiLeft + 48, guiTop + 148, 94, 16);
+        this.drawTooltip(energy, mouseX, mouseY, guiLeft + 18, guiTop + 151, 94, 16);
     }
 
     @Override
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
         fontRenderer.drawString(new TextComponentTranslation("tile.builder_container.name").getFormattedText(), 5, 5, Color.darkGray.getRGB());
-        fontRenderer.drawString(new TextComponentTranslation("tile.builder_container.build").getFormattedText(), 155, 152, Color.black.getRGB());
+        fontRenderer.drawString(new TextComponentTranslation("tile.builder_container.build").getFormattedText(), 168, 156, Color.black.getRGB());
+        fontRenderer.drawString(new TextComponentTranslation("tile.builder_container.destroy").getFormattedText(), 122, 156, Color.black.getRGB());
     }
 
 
@@ -69,7 +73,7 @@ public class GuiBuilderContainer extends GuiContainer {
     @Override
     protected void actionPerformed(GuiButton button) throws IOException {
         switch (button.id) {
-            case BUTTONLOAD:
+            case BUTTONSTART:
                 te.startStructure();
                 NetworkHandler.sendToServer(new MessageHandleGuiBuilderButton(te, 1));
                 break;
@@ -88,7 +92,7 @@ public class GuiBuilderContainer extends GuiContainer {
         drawTexturedModalRect(guiLeft, guiTop, 0, 0, xSize, ySize);
 
         Minecraft.getMinecraft().getTextureManager().bindTexture(energytex);
-        drawTexturedModalRect(guiLeft + 48, guiTop + 148, 0,240, te.getEnergy(), 16);
+        drawTexturedModalRect(guiLeft + 18, guiTop + 151, 0,240, te.getEnergy(), 16);
     }
 
     @Override
@@ -96,8 +100,10 @@ public class GuiBuilderContainer extends GuiContainer {
         int centerX = (width - xSize) / 2;
         int centerY = (height - ySize) / 2;
 
-        buttonList.add(builderLoadButton = new GuiButtonMedium(BUTTONLOAD, centerX + 145, centerY + 147));
-        buttonList.add(checkButton = new GuiButtonCheck(CHECK, centerX + 190, centerY + 147, te.getChecked()));
+        buttonList.add(buttonMedium = new GuiButtonMedium(BUTTONSTART, centerX + 157, centerY + 150));
+        buttonList.add(checkButton = new GuiButtonCheck(CHECK, centerX + 201, centerY + 150, te.getChecked()));
+        buttonList.add(buttonMedium = new GuiButtonMedium(BUTTONDEMOLISH, centerX + 114, centerY + 150));
+        buttonList.add(checkButtonOverwrite = new GuiButtonCheck(BUTTONOVERWRITE, centerX + 221, centerY + 150, true));
 
         super.initGui();
     }

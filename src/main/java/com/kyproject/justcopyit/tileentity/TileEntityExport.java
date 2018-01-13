@@ -27,10 +27,9 @@ public class TileEntityExport extends TileEntity {
     private String state = "Idle";
 
     public void buttonPressed(int id, String name) {
+
         if(id == 0) {
             this.createStructure(name);
-        } else if(id == 1) {
-            //this.startStructure();
         }
     }
 
@@ -82,9 +81,9 @@ public class TileEntityExport extends TileEntity {
         // if nothing is in slot just skip it! and range is all filled
         if(rangeX  != 0 && rangeY != 0 && rangeZ != 0) {
             // Creating the structure arrayList
-            for (int x = this.rangeCalculator(rangeX)[0]; x < this.rangeCalculator(rangeX)[1]; x++) {
-                for (int z = this.rangeCalculator(rangeZ)[0]; z < this.rangeCalculator(rangeZ)[1]; z++) {
-                    for (int y = this.rangeCalculator(rangeY)[0]; y < this.rangeCalculator(rangeY)[1]; y++) {
+            for (int y = this.rangeCalculator(rangeY)[0]; y < this.rangeCalculator(rangeY)[1]; y++) {
+                for (int x = this.rangeCalculator(rangeX)[0]; x < this.rangeCalculator(rangeX)[1]; x++) {
+                    for (int z = this.rangeCalculator(rangeZ)[0]; z < this.rangeCalculator(rangeZ)[1]; z++) {
                         if (!world.isAirBlock(pos.add(x + fX, y, z + fZ))) {
                             if (world.getBlockState(pos.add(x + fX, y, z + fZ)).getMaterial().isLiquid()) {
                                 if (world.getBlockState(pos.add(x + fX, y, z + fZ)).getBlock().getMetaFromState(world.getBlockState(pos.add(x + fX, y, z + fZ)).getActualState(world, pos.add(x + fX, y, z + fZ))) == 0) {
@@ -100,7 +99,7 @@ public class TileEntityExport extends TileEntity {
                 }
             }
             structureTemplate.combine();
-            structureTemplate.create("card", "card", forward, -1, rangeX, rangeY, rangeZ);
+            structureTemplate.create("card", name, forward, -1, rangeX, rangeY, rangeZ);
             StructureTemplate.BlockPlace structure = structureTemplate.getStructure();
             NBTTagCompound nbt = new NBTTagCompound();
 

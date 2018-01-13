@@ -68,7 +68,7 @@ public class GuiScannerContainer extends GuiContainer {
     protected void actionPerformed(GuiButton button) throws IOException {
         switch (button.id) {
             case BUTTONSAVE:
-                NetworkHandler.sendToServer(new MessageHandleGuiScannerButton(te, 0));
+                NetworkHandler.sendToServer(new MessageHandleGuiScannerButton(te, 0, Minecraft.getMinecraft().player.canUseCommand(4,null)));
                 break;
         }
 

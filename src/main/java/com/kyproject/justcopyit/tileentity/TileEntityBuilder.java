@@ -1,17 +1,13 @@
 package com.kyproject.justcopyit.tileentity;
-import com.google.common.reflect.TypeToken;
-import com.google.gson.Gson;
-import com.kyproject.justcopyit.JustCopyIt;
 import com.kyproject.justcopyit.init.Filters;
 import com.kyproject.justcopyit.init.ModItems;
 import com.kyproject.justcopyit.templates.StructureTemplate;
+import com.kyproject.justcopyit.templates.StructureTemplateManager;
 import com.kyproject.justcopyit.util.NBTUtilFix;
 import net.minecraft.block.*;
 import net.minecraft.block.properties.PropertyDirection;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
-import net.minecraft.item.ItemSeeds;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.*;
 import net.minecraft.network.NetworkManager;
@@ -27,16 +23,13 @@ import net.minecraftforge.energy.CapabilityEnergy;
 import net.minecraftforge.energy.EnergyStorage;
 import net.minecraftforge.energy.IEnergyStorage;
 import net.minecraftforge.fluids.*;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
+import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
 
 import javax.annotation.Nullable;
-import java.io.*;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 public class TileEntityBuilder extends TileEntity implements ITickable {
@@ -44,27 +37,29 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
     private StructureTemplate.BlockPlace blockStructure;
     public static ArrayList<Filters.changeItemFilter> filter = new ArrayList<>();
 
+    public FluidTank fluidTank = new FluidTank(20000);
     private ItemStackHandler inventory = new ItemStackHandler(132);
     private Capability<IEnergyStorage> energyCapability = CapabilityEnergy.ENERGY;
-    public EnergyStorage energy = new EnergyStorage(100000);;
+    private Capability<IFluidHandler> fluidCapability = CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY;
+    public EnergyStorage energy = new EnergyStorage(100000);
 
     private boolean blockIsBuilding = false;
+    private boolean blockIsDemolishing = false;
     private int countBlocks = 0;
     private int counter = 0;
     private boolean isLiquid = false;
-    private boolean isSeed = false;
     private boolean checked = false;
     private boolean removedDurability = false;
+    public EnumFacing facing;
     public int rangeX = 0;
     public int rangeY = 0;
     public int rangeZ = 0;
     public ItemStack needItem = null;
     public String texture = "blue";
 
-    public int movableX = 2;
-    public int movableY = 2;
-    public int movableZ = 2;
-
+    public int movableX = 0;
+    public int movableY = 0;
+    public int movableZ = 0;
 
     public void buttonPressed(int id) {
         switch (id) {
@@ -73,6 +68,40 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
                 break;
             case 2:
                 this.setChecked();
+                break;
+            case 4:
+                movableX++;
+                break;
+            case 5:
+                movableX--;
+                break;
+            case 6:
+                movableY++;
+                break;
+            case 7:
+                movableY--;
+                break;
+            case 8:
+                movableZ++;
+                break;
+            case 9:
+                movableZ--;
+                break;
+            case 10:
+                movableX = 0;
+                break;
+            case 11:
+                movableY = 0;
+                break;
+            case 12:
+                movableZ = 0;
+                break;
+            case 13:
+                if(facing == null) {
+                    facing = EnumFacing.getFront(this.getBlockMetadata()).rotateY();
+                } else {
+                    facing = facing.rotateY();
+                }
                 break;
             default:
                 break;
@@ -104,6 +133,7 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
     }
 
     public void startStructure() {
+        this.blockIsBuilding = false;
         this.blockStructure = this.getStructure();
         this.checkStructureBuild();
         this.removedDurability = false;
@@ -113,10 +143,24 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
         this.blockIsBuilding = true;
     }
 
-    @SideOnly(Side.CLIENT)
+    public void startDemolish() {
+        this.blockIsBuilding = false;
+        this.blockStructure = this.getStructure();
+        this.checkStructureBuild();
+        this.removedDurability = false;
+        this.countBlocks = 0;
+        this.counter = 0;
+        this.texture = "orange";
+        this.blockIsBuilding = true;
+    }
+
     private void displayCurrentItem() {
-        if(blockStructure.blocks.get(countBlocks).state != null) {
-            this.needItem = blockStructure.blocks.get(countBlocks).state.getBlock().getItem(world, null, blockStructure.blocks.get(countBlocks).state);
+        if(world.isRemote) {
+            if(blockStructure.blocks.get(countBlocks).state != null) {
+                StructureTemplateManager structureTemplateManager = new StructureTemplateManager(world);
+                this.needItem = structureTemplateManager.getItem(blockStructure.blocks.get(countBlocks).state);
+                System.out.println(structureTemplateManager.getItem(blockStructure.blocks.get(countBlocks).state).getItem().getUnlocalizedName());
+            }
         }
     }
 
@@ -135,10 +179,9 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
 
         // Reading
         if(inventory.getStackInSlot(130) != ItemStack.EMPTY) {
-            if(inventory.getStackInSlot(130).getItem() == ModItems.MEMORY_CARD || inventory.getStackInSlot(130).getItem() == ModItems.MEMORY_CARD_CREATIVE) {
+            if(inventory.getStackInSlot(130).getItem() == ModItems.BLUEPRINT || inventory.getStackInSlot(130).getItem() == ModItems.BLUEPRINT_CREATIVE) {
                 if(inventory.getStackInSlot(130).hasTagCompound()) {
                     if(inventory.getStackInSlot(130).getTagCompound().hasKey("type")) {
-                        EnumFacing forward = EnumFacing.getFront(this.getBlockMetadata());
                         NBTTagCompound nbt = inventory.getStackInSlot(130).getTagCompound();
                         NBTTagList tagList = nbt.getTagList("blocks", Constants.NBT.TAG_COMPOUND);
                         for(int i=0;i < tagList.tagCount();i++) {
@@ -153,7 +196,7 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
                             }
 
                             int[] newBlockPosXYZ;
-                            newBlockPosXYZ = this.getRotateStructure(EnumFacing.byName(nbt.getString("facing")), forward, x, y, z);
+                            newBlockPosXYZ = this.getRotateStructure(EnumFacing.byName(nbt.getString("facing")), x, y, z);
 
                             structureTemplate.add(newBlockPosXYZ[0], newBlockPosXYZ[1], newBlockPosXYZ[2], state, nbtBlock);
                         }
@@ -175,143 +218,29 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
     public void update() {
         if(!world.isRemote) {
             this.sendUpdates();
+        } else {
+            if(inventory.getStackInSlot(130) != ItemStack.EMPTY && inventory.getStackInSlot(130).hasTagCompound() && inventory.getStackInSlot(130).getTagCompound().hasKey("rangeX")) {
+                NBTTagCompound nbt = inventory.getStackInSlot(130).getTagCompound();
+                int[] range =  this.getRotateStructureDisplay(EnumFacing.byName(nbt.getString("facing")), nbt.getInteger("rangeX"), nbt.getInteger("rangeY"), nbt.getInteger("rangeZ"));
+
+                this.rangeX = range[0];
+                this.rangeY = range[1];
+                this.rangeZ = range[2];
+
+            } else {
+                this.needItem = null;
+                this.rangeX = 0;
+                this.rangeY = 0;
+                this.rangeZ = 0;
+            }
         }
 
-        if(inventory.getStackInSlot(130) != ItemStack.EMPTY && inventory.getStackInSlot(130).hasTagCompound() && inventory.getStackInSlot(130).getTagCompound().hasKey("rangeX")) {
-            NBTTagCompound nbt = inventory.getStackInSlot(130).getTagCompound();
-            int[] range =  this.getRotateStructure(EnumFacing.byName(nbt.getString("facing")), EnumFacing.getFront(this.getBlockMetadata()), nbt.getInteger("rangeX"), nbt.getInteger("rangeY"), nbt.getInteger("rangeZ"));
-
-            this.rangeX = range[0];
-            this.rangeY = range[1];
-            this.rangeZ = range[2];
-
-        } else {
-            this.rangeX = 0;
-            this.rangeY = 0;
-            this.rangeZ = 0;
+        if(this.blockIsDemolishing) {
+            this.demolishStructure();
         }
 
         if (this.blockIsBuilding) {
-            this.energy.extractEnergy(2,false);
-            int tickCounter = this.getBuildSpeed();
-            if (counter == tickCounter) {
-                if (blockStructure.blocks.size() == countBlocks) {
-                    if (this.removedDurability) {
-                        this.memorycardDurability();
-                    }
-                    countBlocks = blockStructure.blocks.size();
-                    this.blockIsBuilding = false;
-                    this.needItem = null;
-                    this.texture = "green";
-                } else {
-                    if (inventory.getStackInSlot(130).getItem().equals(ModItems.MEMORY_CARD_CREATIVE)) {
-                        EnumFacing facing_new = EnumFacing.getFront(this.getBlockMetadata());
-                        EnumFacing facing_original = blockStructure.facing;
-
-                        for (int countBlocks = 0; countBlocks < blockStructure.blocks.size(); countBlocks++) {
-                            BlockPos blockPos = new BlockPos(pos).add(blockStructure.blocks.get(countBlocks).x, blockStructure.blocks.get(countBlocks).y, blockStructure.blocks.get(countBlocks).z);
-                            IBlockState stateBlock = blockStructure.blocks.get(countBlocks).state;
-                            stateBlock = this.getStateWithRotation(facing_original, facing_new, stateBlock);
-                            world.setBlockState(blockPos, stateBlock, 3);
-
-
-                            TileEntity tileEntity = world.getTileEntity(blockPos);
-                            if (tileEntity != null) {
-                                blockStructure.blocks.get(countBlocks).nbtTagCompound.setInteger("x", blockPos.getX());
-                                blockStructure.blocks.get(countBlocks).nbtTagCompound.setInteger("y", blockPos.getY());
-                                blockStructure.blocks.get(countBlocks).nbtTagCompound.setInteger("z", blockPos.getZ());
-                                tileEntity.readFromNBT(blockStructure.blocks.get(countBlocks).nbtTagCompound);
-                            }
-
-                        }
-                        this.memorycardDurability();
-                        countBlocks = blockStructure.blocks.size();
-                    } else if(this.energy.getEnergyStored() != 0) {
-                        boolean build;
-
-                        if (!inventory.getStackInSlot(130).isEmpty()) {
-                            if (world.isAirBlock(new BlockPos(pos).add(blockStructure.blocks.get(countBlocks).x, blockStructure.blocks.get(countBlocks).y, blockStructure.blocks.get(countBlocks).z))) {
-                                build = true;
-                            } else {
-                                if (world.getBlockState(new BlockPos(pos).add(blockStructure.blocks.get(countBlocks).x, blockStructure.blocks.get(countBlocks).y, blockStructure.blocks.get(countBlocks).z)).getMaterial().isLiquid()) {
-                                    build = true;
-                                } else {
-                                    build = world.getBlockState(new BlockPos(pos).add(blockStructure.blocks.get(countBlocks).x, blockStructure.blocks.get(countBlocks).y, blockStructure.blocks.get(countBlocks).z)).getBlock().isReplaceable(world, new BlockPos(pos).add(blockStructure.blocks.get(countBlocks).x, blockStructure.blocks.get(countBlocks).y, blockStructure.blocks.get(countBlocks).z));
-                                }
-                            }
-
-                            if (!this.removedDurability) {
-                                this.removedDurability = true;
-                            }
-
-                            if (build) {
-                                boolean skipBlock = true;
-                                this.texture = "red";
-                                for(int memoryUpgrade = 0;memoryUpgrade <= this.inventory.getStackInSlot(131).getCount();memoryUpgrade++) {
-                                    if (blockStructure.blocks.size() != countBlocks) {
-                                        for (int slot = 0; slot < inventory.getSlots() - 2; slot++) {
-                                            if (this.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, EnumFacing.NORTH)) {
-                                                this.displayCurrentItem();
-                                                if (!inventory.getStackInSlot(slot).isEmpty()) {
-                                                    if (this.haveItem(blockStructure.blocks.get(countBlocks).state, slot)) {
-                                                        if (this.energy.getEnergyStored() >= this.energyToPlace()) {
-                                                            BlockPos blockPos = new BlockPos(pos).add(blockStructure.blocks.get(countBlocks).x + this.movableX, blockStructure.blocks.get(countBlocks).y + this.movableY, blockStructure.blocks.get(countBlocks).z + this.movableZ);
-                                                            IBlockState stateBlock = blockStructure.blocks.get(countBlocks).state;
-                                                            EnumFacing facing_new = EnumFacing.getFront(this.getBlockMetadata());
-                                                            EnumFacing facing_original = blockStructure.facing;
-                                                            stateBlock = this.getStateWithRotation(facing_original, facing_new, stateBlock);
-                                                            if (this.isSeed) {
-                                                                world.setBlockState(blockPos, stateBlock.getBlock().getDefaultState(), 3);
-                                                            } else {
-                                                                world.setBlockState(blockPos, stateBlock, 3);
-                                                                TileEntity tileEntity = world.getTileEntity(blockPos);
-                                                                if (tileEntity != null) {
-                                                                    blockStructure.blocks.get(countBlocks).nbtTagCompound.setInteger("x", blockPos.getX());
-                                                                    blockStructure.blocks.get(countBlocks).nbtTagCompound.setInteger("y", blockPos.getY());
-                                                                    blockStructure.blocks.get(countBlocks).nbtTagCompound.setInteger("z", blockPos.getZ());
-                                                                    tileEntity.readFromNBT(blockStructure.blocks.get(countBlocks).nbtTagCompound);
-                                                                }
-                                                            }
-
-                                                            if (!this.isLiquid) {
-                                                                inventory.extractItem(slot, 1, false);
-                                                            } else {
-                                                                inventory.setStackInSlot(slot, new ItemStack(Items.BUCKET));
-                                                                this.updateWaterTick(blockPos);
-                                                            }
-
-                                                            this.energy.extractEnergy(this.energyToPlace(), false);
-                                                            this.texture = "orange";
-                                                            this.isLiquid = false;
-                                                            skipBlock = false;
-                                                            countBlocks++;
-                                                            break;
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-
-                                if (skipBlock && this.checked) {
-                                    countBlocks++;
-                                }
-                            } else {
-                                countBlocks++;
-                            }
-                        } else {
-                            this.blockIsBuilding = false;
-                        }
-                    } else {
-                        this.needItem = null;
-                        this.texture = "grey";
-                    }
-                }
-                counter = 0;
-            } else {
-                counter++;
-            }
+            this.buildStructure();
         } else if(this.energy.getEnergyStored() == 0) {
             this.texture = "grey";
         } else {
@@ -319,24 +248,185 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
         }
     }
 
+    private void demolishStructure() {
+        if(!world.isRemote) {
+            if (blockStructure.blocks.size() != countBlocks) {
+                if (blockStructure.blocks.get(countBlocks).isPlaced) {
+                    EnumFacing facing_new = this.facing;
+                    EnumFacing facing_original = blockStructure.facing;
+
+                    BlockPos blockPos = new BlockPos(pos).add(blockStructure.blocks.get(countBlocks).x, blockStructure.blocks.get(countBlocks).y, blockStructure.blocks.get(countBlocks).z);
+                    IBlockState stateBlock = blockStructure.blocks.get(countBlocks).state;
+                    stateBlock = this.getStateWithRotation(facing_original, facing_new, stateBlock);
+
+                    for (int slot = 0; slot < inventory.getSlots() - 3; slot++) {
+                        System.out.println(inventory.getStackInSlot(slot));
+                        if (inventory.getStackInSlot(slot).isItemEqual(stateBlock.getBlock().getItem(world, null, stateBlock)) && inventory.getStackInSlot(slot).getMaxStackSize() != inventory.getStackInSlot(slot).getCount()) {
+                            inventory.insertItem(slot, stateBlock.getBlock().getItem(world, null, stateBlock), false);
+                            world.destroyBlock(blockPos,false);
+                            break;
+                        } else {
+                            if (inventory.getStackInSlot(slot).isEmpty()) {
+                                inventory.insertItem(slot, stateBlock.getBlock().getItem(world, null, stateBlock), false);
+                                world.destroyBlock(blockPos,false);
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                countBlocks++;
+            }
+        }
+    }
+
+    private void buildStructure() {
+        int creative;
+        if(!inventory.getStackInSlot(130).getItem().equals(ModItems.BLUEPRINT_CREATIVE)) {
+            this.energy.extractEnergy(2, false);
+            creative = 0;
+        } else {
+            creative = 10 * this.inventory.getStackInSlot(131).getCount() + 10;
+        }
+
+        int tickCounter = this.getBuildSpeed();
+        if (counter == tickCounter) {
+            if (blockStructure.blocks.size() == countBlocks) {
+                if (this.removedDurability) {
+                    this.memorycardDurability();
+                }
+                countBlocks = blockStructure.blocks.size();
+                this.blockIsBuilding = false;
+                this.needItem = null;
+                this.texture = "green";
+            } else {
+
+                EnumFacing facing_new = this.facing;
+                EnumFacing facing_original = blockStructure.facing;
+
+                if(this.energy.getEnergyStored() != 0 || inventory.getStackInSlot(130).getItem().equals(ModItems.BLUEPRINT_CREATIVE)) {
+                    boolean canBuild = false;
+
+                    if (!inventory.getStackInSlot(130).isEmpty()) {
+                        for(int memoryUpgrade = 0;memoryUpgrade <= this.inventory.getStackInSlot(131).getCount() + creative;memoryUpgrade++) {
+                            if (blockStructure.blocks.size() != countBlocks) {
+                                if(world.isRemote) {
+                                    this.displayCurrentItem();
+                                }
+
+                                while (!canBuild) {
+                                    if (!blockStructure.blocks.get(countBlocks).isPlaced) {
+                                        if (world.isAirBlock(new BlockPos(pos).add(blockStructure.blocks.get(countBlocks).x, blockStructure.blocks.get(countBlocks).y, blockStructure.blocks.get(countBlocks).z))) {
+                                            canBuild = true;
+                                        } else {
+                                            if (world.getBlockState(new BlockPos(pos).add(blockStructure.blocks.get(countBlocks).x, blockStructure.blocks.get(countBlocks).y, blockStructure.blocks.get(countBlocks).z)).getMaterial().isLiquid()) {
+                                                canBuild = true;
+                                            } else {
+                                                if (world.getBlockState(new BlockPos(pos).add(blockStructure.blocks.get(countBlocks).x, blockStructure.blocks.get(countBlocks).y, blockStructure.blocks.get(countBlocks).z)).getBlock().isReplaceable(world, new BlockPos(pos).add(blockStructure.blocks.get(countBlocks).x, blockStructure.blocks.get(countBlocks).y, blockStructure.blocks.get(countBlocks).z))) {
+                                                    canBuild = true;
+                                                } else {
+                                                    if (blockStructure.blocks.size() != countBlocks + 1) {
+                                                        countBlocks++;
+                                                    } else {
+                                                        break;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    } else {
+                                        if (blockStructure.blocks.size() != countBlocks + 1) {
+                                            countBlocks++;
+                                        } else {
+                                            break;
+                                        }
+                                    }
+                                }
+
+                                if (!this.removedDurability) {
+                                    this.removedDurability = true;
+                                }
+
+                                if (canBuild) {
+                                    boolean skipBlock = true;
+                                    boolean build = false;
+                                    int inventorySlot = 0;
+
+                                    if (inventory.getStackInSlot(130).getItem().equals(ModItems.BLUEPRINT_CREATIVE)) {
+                                        build = true;
+                                    } else {
+                                        for (int slot = 0; slot < inventory.getSlots() - 2; slot++) {
+                                            if (this.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, EnumFacing.NORTH)) {
+                                                if (!inventory.getStackInSlot(slot).isEmpty()) {
+                                                    if (this.haveItem(blockStructure.blocks.get(countBlocks).state, slot) && this.energy.getEnergyStored() >= this.energyToPlace()) {
+                                                        build = true;
+                                                        inventorySlot = slot;
+                                                        break;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    if (build) {
+                                        StructureTemplateManager templateManager = new StructureTemplateManager(world);
+                                        BlockPos blockPos = new BlockPos(pos).add(blockStructure.blocks.get(countBlocks).x, blockStructure.blocks.get(countBlocks).y, blockStructure.blocks.get(countBlocks).z);
+                                        IBlockState stateBlock = blockStructure.blocks.get(countBlocks).state;
+                                        stateBlock = this.getStateWithRotation(facing_original, facing_new, stateBlock);
+
+                                        templateManager.placeBlockInWorld(blockPos, stateBlock, blockStructure.blocks.get(countBlocks).nbtTagCompound);
+
+                                        if (!inventory.getStackInSlot(130).getItem().equals(ModItems.BLUEPRINT_CREATIVE)) {
+                                            templateManager.removeItemFromContainer(inventory, inventorySlot, isLiquid);
+                                            this.energy.extractEnergy(this.energyToPlace(), false);
+                                        }
+
+                                        this.texture = "orange";
+                                        this.isLiquid = false;
+                                        skipBlock = false;
+                                        countBlocks++;
+                                    } else {
+                                        this.texture = "red";
+                                    }
+                                    if (skipBlock && this.checked) {
+                                        countBlocks++;
+                                    }
+                                } else {
+                                    countBlocks++;
+                                }
+                            }
+                        }
+                    } else {
+                        this.blockIsBuilding = false;
+                    }
+                } else {
+                    this.needItem = null;
+                    this.texture = "grey";
+                }
+            }
+            counter = 0;
+        } else {
+            counter++;
+        }
+    }
+
     private void checkStructureBuild() {
-        List<BlockPos> blockPosition = new ArrayList<>();
         for(int block = 0; block < blockStructure.blocks.size();block++) {
             BlockPos blockPos = new BlockPos(pos).add(blockStructure.blocks.get(block).x, blockStructure.blocks.get(block).y, blockStructure.blocks.get(block).z);
             IBlockState structureState = blockStructure.blocks.get(block).state;
             IBlockState currentState = world.getBlockState(blockPos).getActualState(world, blockPos);
+            ItemStack structureItem = structureState.getBlock().getItem(world, null, structureState);
+            ItemStack currentItem = currentState.getBlock().getItem(world, null, currentState);
 
-            if(this.getStateWithRotation(blockStructure.facing, EnumFacing.getFront(this.getBlockMetadata()), structureState).equals(currentState)) {
-                blockPosition.add(blockPos);
-            }
-        }
-        for (BlockPos blocks : blockPosition) {
-            for(int block = 0; block < blockStructure.blocks.size();block++) {
-                BlockPos blockPos = new BlockPos(pos).add(blockStructure.blocks.get(block).x, blockStructure.blocks.get(block).y, blockStructure.blocks.get(block).z);
-                if(blockPos.equals(blocks)) {
-                    blockStructure.blocks.remove(block);
+            if(structureState.getMaterial().isLiquid() && currentState.getMaterial().isLiquid()) {
+                if(structureState == currentState) {
+                    blockStructure.blocks.get(block).isPlaced = true;
+                }
+            } else {
+                if(structureItem.isItemEqual(currentItem)) {
+                    blockStructure.blocks.get(block).isPlaced = true;
                 }
             }
+
         }
     }
 
@@ -366,16 +456,6 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
                 }
             }
         }
-    }
-
-    public ArrayList<Filters.changeItemFilter> readJsonFilter() {
-        try {
-            Type type = new TypeToken<ArrayList<Filters.changeItemFilter>>(){}.getType();
-            return new Gson().fromJson(new FileReader("resources\\JustCopyIt\\changeItemFilter.json"), type);
-        } catch (IOException e) {
-            JustCopyIt.logger.error(e);
-        }
-        return null;
     }
 
     private IBlockState getStateWithRotation(EnumFacing origin, EnumFacing newRotation, IBlockState state) {
@@ -414,12 +494,15 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
         }
     }
 
-    private int[] getRotateStructure(EnumFacing origin, EnumFacing newRotation, int oldX, int oldY, int oldZ) {
+    private int[] getRotateStructureDisplay(EnumFacing origin, int oldX, int oldY, int oldZ) {
         int x;
         int z;
+        if(facing == null) {
+            facing = EnumFacing.getFront(this.getBlockMetadata());
+        }
 
-        if(origin.getAxis() == newRotation.getAxis()) {
-            if(origin.getName().equals(newRotation.getName())) {
+        if(origin.getAxis() == facing.getAxis()) {
+            if(origin.getName().equals(facing.getName())) {
                 //0
                 x = (oldX);
                 z = (oldZ);
@@ -429,7 +512,7 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
                 z = (-oldZ);
             }
         } else {
-            if(origin.rotateY().getName().equals(newRotation.getName())){
+            if(origin.rotateY().getName().equals(facing.getName())){
                 //90
                 x = (-oldZ);
                 z = (oldX);
@@ -448,6 +531,43 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
         return posXYZ;
     }
 
+    private int[] getRotateStructure(EnumFacing origin, int oldX, int oldY, int oldZ) {
+        int x;
+        int z;
+        if(facing == null) {
+            facing = EnumFacing.getFront(this.getBlockMetadata());
+        }
+
+        if(origin.getAxis() == facing.getAxis()) {
+            if(origin.getName().equals(facing.getName())) {
+                //0
+                x = (oldX) + this.movableX;
+                z = (oldZ) + this.movableZ;
+            } else {
+                // 180
+                x = (-oldX) + this.movableX;
+                z = (-oldZ) + this.movableZ;
+            }
+        } else {
+            if(origin.rotateY().getName().equals(facing.getName())){
+                //90
+                x = (-oldZ) + this.movableX;
+                z = (oldX) + this.movableZ;
+            } else {
+                //270
+                x = (oldZ) + this.movableX;
+                z = (-oldX) + this.movableZ;
+            }
+        }
+
+        int[] posXYZ = new int[3];
+        posXYZ[0] = x;
+        posXYZ[1] = oldY + this.movableY;
+        posXYZ[2] = z;
+
+        return posXYZ;
+    }
+
     private void updateWaterTick(BlockPos blockPos) {
         if(world.isAirBlock(blockPos.add(0,1,0))) {
             world.setBlockState(blockPos.add(0,1,0), Blocks.GRASS.getDefaultState());
@@ -460,6 +580,10 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
     }
 
     private boolean haveItem(IBlockState state, int slot) {
+        if(inventory.getStackInSlot(130).getItem().equals(ModItems.BLUEPRINT_CREATIVE)) {
+            return true;
+        }
+
         if(state.getBlock().getDefaultState().getMaterial().isLiquid()) {
             Fluid fluid = FluidRegistry.lookupFluidForBlock(Block.getBlockFromName(blockStructure.blocks.get(countBlocks).state.getBlock().getRegistryName().toString()));
             ItemStack bucket = FluidUtil.getFilledBucket(new FluidStack(fluid, 1000));
@@ -489,24 +613,18 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
         for (Filters.changeItemFilter filter : filter) {
             if (Objects.equals(filter.original.intern(), state.getBlock().getRegistryName().toString())) {
                 if (inventory.getStackInSlot(slot).getItem().getRegistryName().toString().equals(filter.replace)) {
-                    if(inventory.getStackInSlot(slot).getItem() instanceof ItemSeeds) {
-                        this.isSeed = true;
-                    }
                     return true;
                 }
             }
         }
 
-        if(inventory.getStackInSlot(slot).getItem() instanceof ItemSeeds) {
-            this.isSeed = true;
-        }
 
         return inventory.getStackInSlot(slot).isItemEqual(state.getBlock().getItem(world, null, state));
     }
 
     @Override
     public double getMaxRenderDistanceSquared() {
-        return 1000;
+        return 10000;
     }
 
     @Override
@@ -519,6 +637,7 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
         compound.setTag("inventory", inventory.serializeNBT());
         compound.setBoolean("checked", this.checked);
         compound.setTag("energy", this.energyCapability.writeNBT(this.energy, null));
+        this.fluidTank.writeToNBT(compound);
 
         return super.writeToNBT(compound);
     }
@@ -528,9 +647,11 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
         super.readFromNBT(compound);
         inventory.deserializeNBT(compound.getCompoundTag("inventory"));
         this.checked = compound.getBoolean("checked");
+        this.fluidTank.readFromNBT(compound);
         if(compound.hasKey("energy")) {
             this.energyCapability.readNBT(this.energy, null, compound.getTag("energy"));
         }
+
     }
 
     @Override
@@ -552,11 +673,7 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
 
     @Override
     public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
-        if(capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY)
-            return true;
-        if(capability == CapabilityEnergy.ENERGY)
-            return true;
-        return super.hasCapability(capability, facing);
+        return capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY || capability == CapabilityEnergy.ENERGY || capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY || super.hasCapability(capability, facing);
     }
 
     @Override
@@ -565,9 +682,8 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
             return (T) this.inventory;
         if(capability == CapabilityEnergy.ENERGY && facing != EnumFacing.DOWN)
             return (T) this.energy;
+        if(capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY && facing != EnumFacing.DOWN)
+            return (T) this.fluidTank;
         return super.getCapability(capability, facing);
     }
-
-
-
 }

@@ -20,26 +20,31 @@ public class RenderBuilder extends TileEntitySpecialRenderer<TileEntityBuilder> 
     @Override
     public void render(TileEntityBuilder te, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
         super.render(te, x, y, z, partialTicks, destroyStage, alpha);
+        EnumFacing facing = te.facing;
+        if(facing == null) {
+            facing = EnumFacing.getFront(te.getBlockMetadata());
+        }
 
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder bufferbuilder = tessellator.getBuffer();
 
+        double posX = te.rangeX;
+        double posY = te.rangeY;
+        double posZ = te.rangeZ;
+        if(posX != 0 || posY != 0 || posZ != 0) {
         GL11.glPushMatrix();
         GL11.glPushAttrib(GL11.GL_ENABLE_BIT);
-        
+
         GL11.glDisable(GL11.GL_TEXTURE_2D);
         GlStateManager.translate(x, y, z);
         Color color = new Color(255, 255, 0, 50);
         GL11.glColor4d(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
         GL11.glLineWidth(3F);
         bufferbuilder.begin(GL11.GL_LINES, DefaultVertexFormats.POSITION_COLOR);
-        double posX = te.rangeX;
-        double posY = te.rangeY;
-        double posZ = te.rangeZ;
         double width = 0.5;
         double exPosX = 0;
         double exPosZ = 0;
-        switch (EnumFacing.getFront(te.getBlockMetadata())) {
+        switch (facing) {
             case NORTH:
                 exPosX = 0;
                 exPosZ = -1;
@@ -60,59 +65,60 @@ public class RenderBuilder extends TileEntitySpecialRenderer<TileEntityBuilder> 
                 break;
         }
 
-        if(posX != 0 || posY != 0 || posZ != 0) {
+            GlStateManager.pushMatrix();
             //First block
             //Blue
             bufferbuilder.pos(te.movableX + exPosX + posX + width, te.movableY + width, te.movableZ + exPosZ + width).color(0, 0, 255, 255).endVertex(); // right end
             bufferbuilder.pos(te.movableX + exPosX + width, te.movableY + width, te.movableZ + exPosZ + width).color(0, 0, 255, 255).endVertex(); // right start
 
-            bufferbuilder.pos(te.movableX + exPosX + posX + width, posY + te.movableY + width, te.movableZ + exPosZ + width).color(105,105,105, 255).endVertex(); // right end
-            bufferbuilder.pos(te.movableX + exPosX + width, posY  + te.movableY + width, te.movableZ + exPosZ + width).color(105,105,105, 255).endVertex(); // right start
+            bufferbuilder.pos(te.movableX + exPosX + posX + width, posY + te.movableY + width, te.movableZ + exPosZ + width).color(192,192,192, 255).endVertex(); // right end
+            bufferbuilder.pos(te.movableX + exPosX + width, posY  + te.movableY + width, te.movableZ + exPosZ + width).color(192,192,192, 255).endVertex(); // right start
 
-            bufferbuilder.pos(te.movableX + exPosX + posX  + width, te.movableY + width, te.movableZ + exPosZ + width).color(105,105,105, 255).endVertex(); // right end
-            bufferbuilder.pos(te.movableX + exPosX + posX  + width, posY  + te.movableY + width, te.movableZ + exPosZ + width).color(105,105,105, 255).endVertex(); // right end
+            bufferbuilder.pos(te.movableX + exPosX + posX  + width, te.movableY + width, te.movableZ + exPosZ + width).color(192,192,192, 255).endVertex(); // right end
+            bufferbuilder.pos(te.movableX + exPosX + posX  + width, posY  + te.movableY + width, te.movableZ + exPosZ + width).color(192,192,192, 255).endVertex(); // right end
 
             //Green
             bufferbuilder.pos(te.movableX + exPosX + width, te.movableY + width, te.movableZ + exPosZ + width).color(0, 255, 0, 255).endVertex(); // right end
             bufferbuilder.pos(te.movableX + exPosX + width, posY + te.movableY + width, te.movableZ + exPosZ + width).color(0, 255, 0, 255).endVertex(); // right end
 
             //Second block
-            bufferbuilder.pos(te.movableX + exPosX + posX  + width, te.movableY + width, te.movableZ + exPosZ + width + posZ).color(105,105,105, 255).endVertex(); // right end
-            bufferbuilder.pos(te.movableX + exPosX + posX  + width, posY  + te.movableY + width, te.movableZ + exPosZ + width + posZ).color(105,105,105, 255).endVertex(); // right end
+            bufferbuilder.pos(te.movableX + exPosX + posX  + width, te.movableY + width, te.movableZ + exPosZ + width + posZ).color(192,192,192, 255).endVertex(); // right end
+            bufferbuilder.pos(te.movableX + exPosX + posX  + width, posY  + te.movableY + width, te.movableZ + exPosZ + width + posZ).color(192,192,192, 255).endVertex(); // right end
 
-            bufferbuilder.pos(te.movableX + exPosX + width, te.movableY + width, te.movableZ + exPosZ + width + posZ).color(105,105,105, 255).endVertex(); // right end
-            bufferbuilder.pos(te.movableX + exPosX + width, posY  + te.movableY + width, te.movableZ + exPosZ + width + posZ).color(105,105,105, 255).endVertex(); // right end
+            bufferbuilder.pos(te.movableX + exPosX + width, te.movableY + width, te.movableZ + exPosZ + width + posZ).color(192,192,192, 255).endVertex(); // right end
+            bufferbuilder.pos(te.movableX + exPosX + width, posY  + te.movableY + width, te.movableZ + exPosZ + width + posZ).color(192,192,192, 255).endVertex(); // right end
 
-            bufferbuilder.pos(te.movableX + exPosX + posX + width, te.movableY + width, te.movableZ + exPosZ + width + posZ).color(105,105,105, 255).endVertex(); // right end
-            bufferbuilder.pos(te.movableX + exPosX + width, te.movableY + width, te.movableZ + exPosZ + width + posZ).color(105,105,105, 255).endVertex(); // right start
+            bufferbuilder.pos(te.movableX + exPosX + posX + width, te.movableY + width, te.movableZ + exPosZ + width + posZ).color(192,192,192, 255).endVertex(); // right end
+            bufferbuilder.pos(te.movableX + exPosX + width, te.movableY + width, te.movableZ + exPosZ + width + posZ).color(192,192,192, 255).endVertex(); // right start
 
-            bufferbuilder.pos(te.movableX + exPosX + posX + width, posY + te.movableY + width, te.movableZ + exPosZ + width + posZ).color(105,105,105, 255).endVertex(); // right end
-            bufferbuilder.pos(te.movableX + exPosX + width, posY  + te.movableY + width, te.movableZ + exPosZ + width + posZ).color(105,105,105, 255).endVertex(); // right start
+            bufferbuilder.pos(te.movableX + exPosX + posX + width, posY + te.movableY + width, te.movableZ + exPosZ + width + posZ).color(192,192,192, 255).endVertex(); // right end
+            bufferbuilder.pos(te.movableX + exPosX + width, posY  + te.movableY + width, te.movableZ + exPosZ + width + posZ).color(192,192,192, 255).endVertex(); // right start
 
             //Connector block
             //Red
             bufferbuilder.pos(te.movableX + exPosX + width, te.movableY + width, te.movableZ + exPosZ + posZ + width).color(255, 0, 0, 255).endVertex(); // right end
             bufferbuilder.pos(te.movableX + exPosX + width, te.movableY + width, te.movableZ + exPosZ + width).color(255, 0, 0, 255).endVertex(); // right start
 
-            bufferbuilder.pos(te.movableX + exPosX + posX + width, te.movableY + width, te.movableZ + exPosZ + posZ + width).color(105,105,105, 255).endVertex(); // right end
-            bufferbuilder.pos(te.movableX + exPosX + posX + width, te.movableY + width, te.movableZ + exPosZ + width).color(105,105,105, 255).endVertex(); // right start
+            bufferbuilder.pos(te.movableX + exPosX + posX + width, te.movableY + width, te.movableZ + exPosZ + posZ + width).color(192,192,192, 255).endVertex(); // right end
+            bufferbuilder.pos(te.movableX + exPosX + posX + width, te.movableY + width, te.movableZ + exPosZ + width).color(192,192,192, 255).endVertex(); // right start
 
-            bufferbuilder.pos(te.movableX + exPosX + width, posY + te.movableY + width, te.movableZ + exPosZ + posZ + width).color(105,105,105, 255).endVertex(); // right end
-            bufferbuilder.pos(te.movableX + exPosX + width, posY + te.movableY + width, te.movableZ + exPosZ + width).color(105,105,105, 255).endVertex(); // right start
+            bufferbuilder.pos(te.movableX + exPosX + width, posY + te.movableY + width, te.movableZ + exPosZ + posZ + width).color(192,192,192, 255).endVertex(); // right end
+            bufferbuilder.pos(te.movableX + exPosX + width, posY + te.movableY + width, te.movableZ + exPosZ + width).color(192,192,192, 255).endVertex(); // right start
 
-            bufferbuilder.pos(te.movableX + exPosX + posX + width, posY + te.movableY + width, te.movableZ + exPosZ + posZ + width).color(105,105,105, 255).endVertex(); // right end
-            bufferbuilder.pos(te.movableX + exPosX + posX + width, posY + te.movableY + width, te.movableZ + exPosZ + width).color(105,105,105, 255).endVertex(); // right start
+            bufferbuilder.pos(te.movableX + exPosX + posX + width, posY + te.movableY + width, te.movableZ + exPosZ + posZ + width).color(192,192,192, 255).endVertex(); // right end
+            bufferbuilder.pos(te.movableX + exPosX + posX + width, posY + te.movableY + width, te.movableZ + exPosZ + width).color(192,192,192, 255).endVertex(); // right start
 
+
+            tessellator.draw();
+
+            GlStateManager.popMatrix();
+            // clean up GL crap
+            GL11.glColor4f(1, 1, 1, 1);
+            GlStateManager.enableLighting();
+
+            GL11.glPopAttrib();
+            GL11.glPopMatrix();
         }
-        tessellator.draw();
-
-
-        // clean up GL crap
-        GL11.glColor4f(1, 1, 1, 1);
-        GlStateManager.enableLighting();
-
-        GlStateManager.popAttrib();
-        GlStateManager.popMatrix();
 
         if(te.texture != null) {
             // setup GL crap

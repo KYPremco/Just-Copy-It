@@ -1,11 +1,14 @@
 package com.kyproject.justcopyit.init;
 
+import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.kyproject.justcopyit.JustCopyIt;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 
 public class Filters {
@@ -71,6 +74,16 @@ public class Filters {
             this.original = original;
             this.replace = replace;
         }
+    }
+
+    public ArrayList<Filters.changeItemFilter> readJsonFilter() {
+        try {
+            Type type = new TypeToken<ArrayList<Filters.changeItemFilter>>(){}.getType();
+            return new Gson().fromJson(new FileReader("resources\\JustCopyIt\\changeItemFilter.json"), type);
+        } catch (IOException e) {
+            JustCopyIt.logger.error(e);
+        }
+        return null;
     }
 
 }

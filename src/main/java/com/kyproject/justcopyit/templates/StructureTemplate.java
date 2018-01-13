@@ -168,9 +168,9 @@ public class StructureTemplate {
         public String name;
         public EnumFacing facing;
         public int durability;
-        public int rangeX;
-        public int rangeY;
-        public int rangeZ;
+        private int rangeX;
+        private int rangeY;
+        private int rangeZ;
         public ArrayList<BlockState> blocks;
 
         private BlockPlace(String type, String name, EnumFacing facing, int durability, int rangeX, int rangeY, int rangeZ, ArrayList<BlockState> blocks) {
@@ -190,6 +190,7 @@ public class StructureTemplate {
             public int z;
             public IBlockState state;
             public NBTTagCompound nbtTagCompound;
+            public boolean isPlaced;
 
             private BlockState(int x, int y, int z, IBlockState state, @Nullable NBTTagCompound nbtTagCompound) {
                 this.x = x;

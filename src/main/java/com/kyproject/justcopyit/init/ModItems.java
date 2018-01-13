@@ -11,15 +11,13 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry.ObjectHolder;
 
-import javax.annotation.Nullable;
-
 import static com.kyproject.justcopyit.util.InjectionUtil.Null;
 
 @ObjectHolder(JustCopyIt.MODID)
 public class ModItems {
 
-        public static final ItemMemoryCard MEMORY_CARD = Null();
-        public static final ItemMemoryCardCreative MEMORY_CARD_CREATIVE = Null();
+        public static final ItemBlueprint BLUEPRINT = Null();
+        public static final ItemBlueprintCreative BLUEPRINT_CREATIVE = Null();
         public static final ItemBinder MARK_BINDER = Null();
         public static final ItemMagicStick MAGIC_STICK = Null();
         public static final ItemSpeedUpgrade UPGRADE_SPEED = Null();
@@ -35,8 +33,8 @@ public class ModItems {
     @Mod.EventBusSubscriber()
     public static class RegistryHandler {
         private static final Item[] ITEMS = {
-                new ItemMemoryCard("memory_card"),
-                new ItemMemoryCardCreative("memory_card_creative"),
+                new ItemBlueprint("blueprint"),
+                new ItemBlueprintCreative("blueprint_creative"),
                 new ItemBinder("mark_binder"),
                 new ItemMagicStick("magic_stick"),
                 new ItemSpeedUpgrade("upgrade_speed"),
