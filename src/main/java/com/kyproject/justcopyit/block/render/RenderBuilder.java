@@ -1,6 +1,7 @@
 package com.kyproject.justcopyit.block.render;
 
 import com.kyproject.justcopyit.tileentity.TileEntityBuilder;
+import com.kyproject.justcopyit.tileentity.TileEntityWorldMarker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
@@ -66,6 +67,8 @@ public class RenderBuilder extends TileEntitySpecialRenderer<TileEntityBuilder> 
         }
 
             GlStateManager.pushMatrix();
+            OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 175, 240);
+
             //First block
             //Blue
             bufferbuilder.pos(te.movableX + exPosX + posX + width, te.movableY + width, te.movableZ + exPosZ + width).color(0, 0, 255, 255).endVertex(); // right end
@@ -214,19 +217,23 @@ public class RenderBuilder extends TileEntitySpecialRenderer<TileEntityBuilder> 
 
 
 
-            if(te.needItem != null) {
-                EntityItem entityItem0 = new EntityItem(Minecraft.getMinecraft().world, 0, 0, 0, te.needItem);
-                entityItem0.hoverStart = 0F;
-                GlStateManager.pushMatrix();
-                {
-                    GlStateManager.translate(x, y, z);
-                    GlStateManager.translate(0.5, 1.25, 0.5);
-                    GlStateManager.rotate((te.getWorld().getTotalWorldTime()+ partialTicks) * 3f, 0f, 1f, 0f);
-                    Minecraft.getMinecraft().getRenderManager().renderEntity(entityItem0, 0, -1,0, 0F, 0F, false);
-                }
-                GlStateManager.popMatrix();
-                GL11.glColor4f(1, 1, 1, 1);
+        if(te.needItem != null) {
+            EntityItem entityItem0 = new EntityItem(Minecraft.getMinecraft().world, 0, 0, 0, te.needItem);
+            entityItem0.hoverStart = 0F;
+            GlStateManager.pushMatrix();
+            {
+                GlStateManager.translate(x, y, z);
+                GlStateManager.translate(0.5, 1.25, 0.5);
+                GlStateManager.rotate((te.getWorld().getTotalWorldTime()+ partialTicks) * 3f, 0f, 1f, 0f);
+                Minecraft.getMinecraft().getRenderManager().renderEntity(entityItem0, 0, -1,0, 0F, 0F, false);
             }
+            GlStateManager.popMatrix();
+            GL11.glColor4f(1, 1, 1, 1);
+        }
     }
 
+    @Override
+    public boolean isGlobalRenderer(TileEntityBuilder te) {
+        return true;
+    }
 }

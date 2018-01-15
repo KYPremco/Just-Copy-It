@@ -38,9 +38,9 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
     public static ArrayList<Filters.changeItemFilter> filter = new ArrayList<>();
 
     public FluidTank fluidTank = new FluidTank(20000);
+
     private ItemStackHandler inventory = new ItemStackHandler(132);
     private Capability<IEnergyStorage> energyCapability = CapabilityEnergy.ENERGY;
-    private Capability<IFluidHandler> fluidCapability = CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY;
     public EnergyStorage energy = new EnergyStorage(100000);
 
     private boolean blockIsBuilding = false;
@@ -68,6 +68,9 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
                 break;
             case 2:
                 this.setChecked();
+                break;
+            case 3:
+                this.startDemolish();
                 break;
             case 4:
                 movableX++;
@@ -128,30 +131,39 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
         return (energy.getEnergyStored() * 94 / energy.getMaxEnergyStored());
     }
 
+    public FluidStack getFluid() {
+        return fluidTank.getFluid();
+    }
+
     private IBlockState getState() {
         return world.getBlockState(pos);
     }
 
     public void startStructure() {
-        this.blockIsBuilding = false;
-        this.blockStructure = this.getStructure();
-        this.checkStructureBuild();
-        this.removedDurability = false;
-        this.countBlocks = 0;
-        this.counter = 0;
-        this.texture = "orange";
-        this.blockIsBuilding = true;
+        System.out.println(EnumFacing.getFront(this.getBlockMetadata()));
+
+
+//        this.blockIsDemolishing = false;
+//        this.blockIsBuilding = false;
+//        this.blockStructure = this.getStructure();
+//        this.checkStructureBuild();
+//        this.removedDurability = false;
+//        this.countBlocks = 0;
+//        this.counter = 0;
+//        this.texture = "orange";
+//        this.blockIsBuilding = true;
     }
 
     public void startDemolish() {
         this.blockIsBuilding = false;
+        this.blockIsDemolishing = false;
         this.blockStructure = this.getStructure();
         this.checkStructureBuild();
         this.removedDurability = false;
-        this.countBlocks = 0;
+        this.countBlocks = this.blockStructure.blocks.size() - 1;
         this.counter = 0;
         this.texture = "orange";
-        this.blockIsBuilding = true;
+        this.blockIsDemolishing = true;
     }
 
     private void displayCurrentItem() {
@@ -159,7 +171,6 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
             if(blockStructure.blocks.get(countBlocks).state != null) {
                 StructureTemplateManager structureTemplateManager = new StructureTemplateManager(world);
                 this.needItem = structureTemplateManager.getItem(blockStructure.blocks.get(countBlocks).state);
-                System.out.println(structureTemplateManager.getItem(blockStructure.blocks.get(countBlocks).state).getItem().getUnlocalizedName());
             }
         }
     }
@@ -249,34 +260,55 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
     }
 
     private void demolishStructure() {
-        if(!world.isRemote) {
-            if (blockStructure.blocks.size() != countBlocks) {
-                if (blockStructure.blocks.get(countBlocks).isPlaced) {
-                    EnumFacing facing_new = this.facing;
-                    EnumFacing facing_original = blockStructure.facing;
-
-                    BlockPos blockPos = new BlockPos(pos).add(blockStructure.blocks.get(countBlocks).x, blockStructure.blocks.get(countBlocks).y, blockStructure.blocks.get(countBlocks).z);
-                    IBlockState stateBlock = blockStructure.blocks.get(countBlocks).state;
-                    stateBlock = this.getStateWithRotation(facing_original, facing_new, stateBlock);
-
-                    for (int slot = 0; slot < inventory.getSlots() - 3; slot++) {
-                        System.out.println(inventory.getStackInSlot(slot));
-                        if (inventory.getStackInSlot(slot).isItemEqual(stateBlock.getBlock().getItem(world, null, stateBlock)) && inventory.getStackInSlot(slot).getMaxStackSize() != inventory.getStackInSlot(slot).getCount()) {
-                            inventory.insertItem(slot, stateBlock.getBlock().getItem(world, null, stateBlock), false);
-                            world.destroyBlock(blockPos,false);
-                            break;
-                        } else {
-                            if (inventory.getStackInSlot(slot).isEmpty()) {
-                                inventory.insertItem(slot, stateBlock.getBlock().getItem(world, null, stateBlock), false);
-                                world.destroyBlock(blockPos,false);
-                                break;
+        int creative;
+        if(!inventory.getStackInSlot(130).getItem().equals(ModItems.BLUEPRINT_CREATIVE)) {
+            this.energy.extractEnergy(2, false);
+            creative = 0;
+        } else {
+            creative = 3 * this.inventory.getStackInSlot(131).getCount() + 10;
+        }
+        int tickCounter = this.getBuildSpeed();
+        if (counter == tickCounter) {
+            for(int memoryUpgrade = 0;memoryUpgrade <= this.inventory.getStackInSlot(131).getCount() + creative;memoryUpgrade++) {
+                if (countBlocks != -1) {
+                    if (blockStructure.blocks.get(countBlocks).isPlaced) {
+                        EnumFacing facing_new = this.facing;
+                        EnumFacing facing_original = blockStructure.facing;
+                        BlockPos blockPos = new BlockPos(pos).add(blockStructure.blocks.get(countBlocks).x, blockStructure.blocks.get(countBlocks).y, blockStructure.blocks.get(countBlocks).z);
+                        IBlockState stateBlock = blockStructure.blocks.get(countBlocks).state;
+                        stateBlock = this.getStateWithRotation(facing_original, facing_new, stateBlock);
+                        if (countBlocks != -1) {
+                            for (int slot = 0; slot < inventory.getSlots() - 3; slot++) {
+                                if (inventory.getStackInSlot(slot).isItemEqual(stateBlock.getBlock().getItem(world, null, stateBlock)) && inventory.getStackInSlot(slot).getMaxStackSize() != inventory.getStackInSlot(slot).getCount()) {
+                                    if (!world.isRemote) {
+                                        inventory.insertItem(slot, stateBlock.getBlock().getItem(world, null, stateBlock), false);
+                                        world.destroyBlock(blockPos, false);
+                                    }
+                                    break;
+                                } else {
+                                    if (inventory.getStackInSlot(slot).isEmpty()) {
+                                        if (!world.isRemote) {
+                                            inventory.insertItem(slot, stateBlock.getBlock().getItem(world, null, stateBlock), false);
+                                            world.destroyBlock(blockPos, false);
+                                        }
+                                        break;
+                                    }
+                                }
                             }
+                            countBlocks--;
+                        } else {
+                            this.blockIsDemolishing = false;
                         }
+                    } else {
+                        countBlocks--;
                     }
+                } else {
+                    this.blockIsDemolishing = false;
                 }
-
-                countBlocks++;
             }
+            counter = 0;
+        } else {
+            counter++;
         }
     }
 
@@ -316,21 +348,16 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
 
                                 while (!canBuild) {
                                     if (!blockStructure.blocks.get(countBlocks).isPlaced) {
-                                        if (world.isAirBlock(new BlockPos(pos).add(blockStructure.blocks.get(countBlocks).x, blockStructure.blocks.get(countBlocks).y, blockStructure.blocks.get(countBlocks).z))) {
+                                        BlockPos blockPos = new BlockPos(pos).add(blockStructure.blocks.get(countBlocks).x, blockStructure.blocks.get(countBlocks).y, blockStructure.blocks.get(countBlocks).z);
+                                        if(world.mayPlace(blockStructure.blocks.get(countBlocks).state.getBlock(), blockPos, false, EnumFacing.NORTH, null)) {
                                             canBuild = true;
                                         } else {
-                                            if (world.getBlockState(new BlockPos(pos).add(blockStructure.blocks.get(countBlocks).x, blockStructure.blocks.get(countBlocks).y, blockStructure.blocks.get(countBlocks).z)).getMaterial().isLiquid()) {
-                                                canBuild = true;
+                                            if(blockStructure.blocks.size() != countBlocks + 1) {
+                                                countBlocks++;
                                             } else {
-                                                if (world.getBlockState(new BlockPos(pos).add(blockStructure.blocks.get(countBlocks).x, blockStructure.blocks.get(countBlocks).y, blockStructure.blocks.get(countBlocks).z)).getBlock().isReplaceable(world, new BlockPos(pos).add(blockStructure.blocks.get(countBlocks).x, blockStructure.blocks.get(countBlocks).y, blockStructure.blocks.get(countBlocks).z))) {
-                                                    canBuild = true;
-                                                } else {
-                                                    if (blockStructure.blocks.size() != countBlocks + 1) {
-                                                        countBlocks++;
-                                                    } else {
-                                                        break;
-                                                    }
-                                                }
+                                                needItem = null;
+                                                blockIsBuilding = false;
+                                                break;
                                             }
                                         }
                                     } else {
@@ -347,6 +374,7 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
                                 }
 
                                 if (canBuild) {
+                                    System.out.println("BUILD");
                                     boolean skipBlock = true;
                                     boolean build = false;
                                     int inventorySlot = 0;
@@ -390,8 +418,8 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
                                     if (skipBlock && this.checked) {
                                         countBlocks++;
                                     }
-                                } else {
-                                    countBlocks++;
+
+                                    canBuild = false;
                                 }
                             }
                         }

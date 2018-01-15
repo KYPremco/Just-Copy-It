@@ -32,6 +32,7 @@ public class StructureTemplateManager {
 
     public void placeBlockInWorld(BlockPos blockPos, IBlockState stateBlock, @Nullable NBTTagCompound nbt) {
         if(!world.isRemote) {
+            System.out.println(blockPos);
             if (stateBlock instanceof ItemSeeds) {
                 world.setBlockState(blockPos, stateBlock.getBlock().getDefaultState(), 3);
             } else if(stateBlock.getBlock().getItem(world, null, stateBlock).getItem() instanceof ItemDoor) {

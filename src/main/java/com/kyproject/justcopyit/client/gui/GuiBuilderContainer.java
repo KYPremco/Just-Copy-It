@@ -10,9 +10,17 @@ import com.kyproject.justcopyit.tileentity.TileEntityBuilder;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.inventory.GuiContainer;
+import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.client.renderer.vertex.VertexBuffer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraftforge.fluids.FluidStack;
+import org.lwjgl.opengl.GL11;
 
 import java.awt.*;
 import java.io.IOException;
@@ -81,6 +89,10 @@ public class GuiBuilderContainer extends GuiContainer {
                 NetworkHandler.sendToServer(new MessageHandleGuiBuilderButton(te, 2));
                 checkButton.checked = !checkButton.checked;
                 break;
+            case BUTTONDEMOLISH:
+                te.startDemolish();
+                NetworkHandler.sendToServer(new MessageHandleGuiBuilderButton(te, BUTTONDEMOLISH));
+                break;
         }
 
         super.actionPerformed(button);
@@ -108,7 +120,7 @@ public class GuiBuilderContainer extends GuiContainer {
         super.initGui();
     }
 
-    public void drawTooltip(List<String> lines, int mouseX, int mouseY, int posX, int posY, int width, int height) {
+    private void drawTooltip(List<String> lines, int mouseX, int mouseY, int posX, int posY, int width, int height) {
         if(mouseX >= posX && mouseX <= posX + width && mouseY >= posY && mouseY <= posY + height) {
             drawHoveringText(lines, mouseX, mouseY);
         }

@@ -2,9 +2,9 @@
 itemGroup.tab_JustCopyIt=Just Copy It
 
 #Items
-item.memory_card.name=Memorycard
+item.blueprint.name=Blueprint
+item.blueprint_creative.name=Creative blueprint
 item.mark_binder.name=Mark binder
-item.memory_card_creative.name=Creative memorycard
 item.magic_stick.name=Magic stick
 item.upgrade_speed.name=Speed upgrade
 item.laser.name=Laser

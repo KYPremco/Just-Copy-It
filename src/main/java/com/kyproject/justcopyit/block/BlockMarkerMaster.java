@@ -21,7 +21,7 @@ public class BlockMarkerMaster extends BlockBase implements ITileEntityProvider 
 
     public BlockMarkerMaster(String name, Material material) {
         super(name, material);
-        setLightLevel(1F);
+        setLightLevel(0.3F);
     }
 
     @Override

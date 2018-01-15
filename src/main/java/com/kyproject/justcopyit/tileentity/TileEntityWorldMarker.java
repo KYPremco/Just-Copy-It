@@ -105,12 +105,12 @@ public class TileEntityWorldMarker extends TileEntity implements ITickable{
 
     @Override
     public double getMaxRenderDistanceSquared() {
-        return 5500;
+        return 10000;
     }
 
     @Override
     public AxisAlignedBB getRenderBoundingBox() {
-        return INFINITE_EXTENT_AABB;
+        return TileEntity.INFINITE_EXTENT_AABB;
     }
 
     //Some other stuff
