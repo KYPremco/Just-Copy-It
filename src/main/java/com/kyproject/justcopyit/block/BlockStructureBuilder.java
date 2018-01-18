@@ -56,13 +56,10 @@ public class BlockStructureBuilder extends BlockBase implements ITileEntityProvi
             }
         }
 
-        if(te.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, null) && playerIn.inventory.getCurrentItem().getItem() instanceof ItemBucket || playerIn.inventory.getCurrentItem().getItem() instanceof UniversalBucket) {
-            FluidUtil.interactWithFluidHandler(playerIn, hand, te.fluidTank);
-        } else {
-            if (te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null)) {
-                playerIn.openGui(JustCopyIt.instance, GuiHandler.GUI_BUILDER_CONTAINER, worldIn, pos.getX(), pos.getY(), pos.getZ());
-            }
+        if (te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null)) {
+            playerIn.openGui(JustCopyIt.instance, GuiHandler.GUI_BUILDER_CONTAINER, worldIn, pos.getX(), pos.getY(), pos.getZ());
         }
+
 
         return true;
     }
