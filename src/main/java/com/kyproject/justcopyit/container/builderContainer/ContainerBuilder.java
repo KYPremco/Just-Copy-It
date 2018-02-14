@@ -18,14 +18,14 @@ public class ContainerBuilder extends Container {
         if(tileEntityBuilder.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, EnumFacing.NORTH)) {
             IItemHandler inventory = tileEntityBuilder.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, EnumFacing.NORTH);
 
-            // Memory slot
-            addSlotToContainer(new SlotMemory(inventory, 130,222, 171));
+            // blueprint slot
+            addSlotToContainer(new SlotMemory(inventory, 91,192, 148));
 
             // SpeedUpgrade slot
-            addSlotToContainer(new SlotSpeedUpgrade(inventory, 129, 202, 171));
+            addSlotToContainer(new SlotSpeedUpgrade(inventory, 92, 213, 148));
 
             // Memory upgrade
-            addSlotToContainer(new SlotMemoryUpgrade(inventory, 131, 202,191));
+            addSlotToContainer(new SlotMemoryUpgrade(inventory, 93, 213,171));
 
 
             // Container inventory
@@ -39,13 +39,13 @@ public class ContainerBuilder extends Container {
             // Main player inventory
             for(int y = 0;y < 3;y++) {
                 for(int x = 0; x < 9; x++) {
-                    addSlotToContainer(new Slot(inventoryPlayer, x + (y * 9) + 9, 18 + x * 18, 171 + y * 18));
+                    addSlotToContainer(new Slot(inventoryPlayer, x + (y * 9) + 9, 48 + x * 18, 171 + y * 18));
                 }
             }
 
             // Player hotbar
             for(int i = 0;i < 9;i++) {
-                addSlotToContainer(new Slot(inventoryPlayer, i, 18 + (i * 18), 229));
+                addSlotToContainer(new Slot(inventoryPlayer, i, 48 + (i * 18), 229));
             }
         }
 

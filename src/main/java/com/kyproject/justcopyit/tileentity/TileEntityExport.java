@@ -24,13 +24,29 @@ import java.util.ArrayList;
 public class TileEntityExport extends TileEntity {
 
     private ItemStackHandler inventory = new ItemStackHandler(1);
+    private int durability = 0;
     private String state = "Idle";
 
     public void buttonPressed(int id, String name) {
-
-        if(id == 0) {
-            this.createStructure(name);
+        switch (id) {
+            case 0:
+                this.createStructure(name);
+                break;
+            case 1:
+                durability++;
+                break;
+            case 2:
+                if(durability > 0) {
+                    durability--;
+                }
+                break;
+            default:
+                break;
         }
+    }
+
+    public int getDurability() {
+        return this.durability;
     }
 
     private int[] rangeCalculator(int range) {
@@ -99,7 +115,13 @@ public class TileEntityExport extends TileEntity {
                 }
             }
             structureTemplate.combine();
-            structureTemplate.create("card", name, forward, -1, rangeX, rangeY, rangeZ);
+
+            // durability  -1 = infinity
+            if(durability == 0) {
+                structureTemplate.create("file", name, forward, -1, rangeX, rangeY, rangeZ);
+            } else {
+                structureTemplate.create("file", name, forward, durability, rangeX, rangeY, rangeZ);
+            }
             StructureTemplate.BlockPlace structure = structureTemplate.getStructure();
             NBTTagCompound nbt = new NBTTagCompound();
 

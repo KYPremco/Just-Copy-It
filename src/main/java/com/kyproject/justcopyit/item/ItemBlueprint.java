@@ -12,6 +12,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
 
 import javax.annotation.Nullable;
+import java.sql.SQLType;
 import java.util.List;
 import java.util.Objects;
 
@@ -32,6 +33,7 @@ public class ItemBlueprint extends ItemBase {
                 if(stack.getTagCompound() != null) {
                     NBTTagCompound nbt = stack.getTagCompound();
                     tooltip.add("Name: " + nbt.getString("name"));
+
                     if(nbt.hasKey("durability")) {
                         if(nbt.getInteger("durability") > 0) {
                             tooltip.add("Durability: " + nbt.getInteger("durability"));

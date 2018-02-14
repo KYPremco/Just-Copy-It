@@ -60,20 +60,20 @@ public class GuiBuilderContainer extends GuiContainer {
         int centerY = (height - ySize) / 2;
         List<String> skip = new ArrayList<>();
         skip.add(new TextComponentTranslation("tile.builder_container.skip").getFormattedText());
-        drawTooltip(skip, mouseX, mouseY, centerX + 201, centerY + 150, 18,18);
-        List<String> overwrite = new ArrayList<>();
-        overwrite.add(new TextComponentTranslation("tile.builder_container.overwrite").getFormattedText());
-        drawTooltip(overwrite, mouseX, mouseY, centerX + 221, centerY + 150, 18,18);
+        drawTooltip(skip, mouseX, mouseY, centerX + 138, centerY + 147, 18,18);
+//        List<String> overwrite = new ArrayList<>(); some shit what i deleted maybe adding later
+//        overwrite.add(new TextComponentTranslation("tile.builder_container.overwrite").getFormattedText());
+//        drawTooltip(overwrite, mouseX, mouseY, centerX + 221, centerY + 150, 18,18);
         List<String> energy = new ArrayList<>();
         energy.add(NumberFormat.getNumberInstance(Locale.US).format(te.energy.getEnergyStored()) + " / " + NumberFormat.getNumberInstance(Locale.US).format(te.energy.getMaxEnergyStored()) + " RF");
-        this.drawTooltip(energy, mouseX, mouseY, guiLeft + 18, guiTop + 151, 94, 16);
+        this.drawTooltip(energy, mouseX, mouseY, guiLeft + 27, guiTop + 148 , 16, 97);
     }
 
     @Override
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
         fontRenderer.drawString(new TextComponentTranslation("tile.builder_container.name").getFormattedText(), 5, 5, Color.darkGray.getRGB());
-        fontRenderer.drawString(new TextComponentTranslation("tile.builder_container.build").getFormattedText(), 168, 156, Color.black.getRGB());
-        fontRenderer.drawString(new TextComponentTranslation("tile.builder_container.destroy").getFormattedText(), 122, 156, Color.black.getRGB());
+        fontRenderer.drawString(new TextComponentTranslation("tile.builder_container.build").getFormattedText(), 58, 153, Color.black.getRGB());
+        fontRenderer.drawString(new TextComponentTranslation("tile.builder_container.destroy").getFormattedText(), 101, 153, Color.black.getRGB());
     }
 
 
@@ -104,7 +104,15 @@ public class GuiBuilderContainer extends GuiContainer {
         drawTexturedModalRect(guiLeft, guiTop, 0, 0, xSize, ySize);
 
         Minecraft.getMinecraft().getTextureManager().bindTexture(energytex);
-        drawTexturedModalRect(guiLeft + 18, guiTop + 151, 0,240, te.getEnergy(), 16);
+        int energy = te.getEnergy();
+
+        GlStateManager.pushMatrix();
+        GlStateManager.rotate(180,0,0,1);
+
+        drawTexturedModalRect(-guiLeft - 43, -guiTop - 245, 0,159, 16, energy);
+
+        GlStateManager.popMatrix();
+
     }
 
     @Override
@@ -112,10 +120,10 @@ public class GuiBuilderContainer extends GuiContainer {
         int centerX = (width - xSize) / 2;
         int centerY = (height - ySize) / 2;
 
-        buttonList.add(buttonMedium = new GuiButtonMedium(BUTTONSTART, centerX + 157, centerY + 150));
-        buttonList.add(checkButton = new GuiButtonCheck(CHECK, centerX + 201, centerY + 150, te.getChecked()));
-        buttonList.add(buttonMedium = new GuiButtonMedium(BUTTONDEMOLISH, centerX + 114, centerY + 150));
-        buttonList.add(checkButtonOverwrite = new GuiButtonCheck(BUTTONOVERWRITE, centerX + 221, centerY + 150, true));
+        buttonList.add(buttonMedium = new GuiButtonMedium(BUTTONSTART, centerX + 47, centerY + 147));
+        buttonList.add(checkButton = new GuiButtonCheck(CHECK, centerX + 138, centerY + 147, te.getChecked()));
+        buttonList.add(buttonMedium = new GuiButtonMedium(BUTTONDEMOLISH, centerX + 93, centerY + 147));
+       // buttonList.add(checkButtonOverwrite = new GuiButtonCheck(BUTTONOVERWRITE, centerX + 158, centerY + 147, true));
 
         super.initGui();
     }

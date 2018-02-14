@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "MGM",
+    "GEG",
+    "RGR"
+  ],
+  "key": {
+    "R": {
+      "item": "minecraft:redstone"
+    },
+    "G": {
+      "item": "minecraft:gold_ingot"
+    },
+    "E": {
+      "item": "kypjci:upgrade_empty"
+    },
+    "M": {
+      "item": "kypjci:memory"
+    }
+  },
+  "result": {
+    "item": "kypjci:upgrade_memory"
+  }
+}

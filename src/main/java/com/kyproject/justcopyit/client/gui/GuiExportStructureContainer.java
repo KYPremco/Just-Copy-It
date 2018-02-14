@@ -51,7 +51,7 @@ public class GuiExportStructureContainer extends GuiContainer {
         fontRenderer.drawString(new TextComponentTranslation("tile.tutorial_container.name").getFormattedText(), 5, 5, Color.darkGray.getRGB());
         fontRenderer.drawString("Name", 5, 20, Color.black.getRGB());
         fontRenderer.drawString("Max uses:", 75, 80, Color.black.getRGB());
-        fontRenderer.drawString("∞", 125, 80, Color.black.getRGB());
+        fontRenderer.drawString(Integer.toString(te.getDurability()), 125, 80, Color.black.getRGB());
         fontRenderer.drawString("Export", 30, 77, Color.black.getRGB());
         fontRenderer.drawString("Status:", 8, 60, Color.black.getRGB());
         fontRenderer.drawString(te.getStateExport(), 45, 60, Color.black.getRGB());
@@ -65,7 +65,12 @@ public class GuiExportStructureContainer extends GuiContainer {
                 NetworkHandler.sendToServer(new MessageHandleGuiExportButton(te, 0, text.getText()));
                 break;
             case BUTTONPLUS:
-                //NetworkHandler.sendToServer(new MessageHandleGuiBuilderButton(te, 1));
+                NetworkHandler.sendToServer(new MessageHandleGuiExportButton(te, 1, ""));
+                te.buttonPressed(BUTTONPLUS, "");
+                break;
+            case BUTTONMINUS:
+                NetworkHandler.sendToServer(new MessageHandleGuiExportButton(te, 2, ""));
+                te.buttonPressed(BUTTONMINUS, "");
                 break;
         }
         super.actionPerformed(button);

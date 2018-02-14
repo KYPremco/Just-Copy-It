@@ -47,8 +47,8 @@ public class BlockStructureBuilder extends BlockBase implements ITileEntityProvi
             if (te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null)) {
                 IItemHandler inventory = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
                 if (inventory != null) {
-                    if (inventory.getStackInSlot(130).isEmpty()) {
-                        inventory.insertItem(130, playerIn.inventory.getCurrentItem().copy().splitStack(1), false);
+                    if (inventory.getStackInSlot(91).isEmpty()) {
+                        inventory.insertItem(91, playerIn.inventory.getCurrentItem().copy().splitStack(1), false);
                         playerIn.inventory.getCurrentItem().splitStack(1);
                         return true;
                     }

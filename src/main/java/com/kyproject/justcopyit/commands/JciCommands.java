@@ -86,23 +86,27 @@ public class JciCommands extends CommandBase {
 
                 NBTTagCompound nbt = structureTemplate.getNBT(args[1]);
 
-
-                if(args.length > 2) {
-                    if(this.tryParseInt(args[2]) != null) {
-                        int durability = Integer.parseInt(args[2]);
-                        if(durability <= 0) {
-                            nbt.setInteger("durability", -1);
+                if(nbt != null) {
+                    if(args.length > 2) {
+                        if(this.tryParseInt(args[2]) != null) {
+                            int durability = Integer.parseInt(args[2]);
+                            if(durability <= 0) {
+                                nbt.setInteger("durability", -1);
+                            } else {
+                                nbt.setInteger("durability", durability);
+                            }
                         } else {
-                            nbt.setInteger("durability", durability);
+                            sender.sendMessage( new TextComponentString("§cUsage: /jci memorycard <file name> <usages> <creative>"));
                         }
                     } else {
-                        sender.sendMessage( new TextComponentString("§cUsage: /jci memorycard <file name> <usages> <creative>"));
+                        if(nbt.hasKey("durability")) {
+                            nbt.setInteger("durability", nbt.getInteger("durability"));
+                        } else {
+                            nbt.setInteger("durability", -1);
+                        }
                     }
-                } else {
-                    nbt.setInteger("durability", -1);
-                }
 
-                if(nbt != null) {
+
                     ItemStack item;
                     if(args.length > 3) {
                         if(args[3].equals("true")) {
@@ -121,8 +125,8 @@ public class JciCommands extends CommandBase {
                         world.spawnEntity(new EntityItem(world, player.posX, player.posY, player.posZ, item));
                     }
                 } else {
-                    JustCopyIt.logger.warn("File doesn't exist!!");
-                    sender.sendMessage( new TextComponentString("§cFile doesn't exist!!"));
+                    JustCopyIt.logger.warn("[JCI] File doesn't exist!!");
+                    sender.sendMessage( new TextComponentString("§c[JCI] File doesn't exist"));
                 }
             } else {
                 sender.sendMessage( new TextComponentString("§cUsage: /jci memorycard <file name> <usages> <creative>"));
