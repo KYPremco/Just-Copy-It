@@ -54,6 +54,7 @@ public class JciConfig {
     private static void syncConfig(boolean loadFromConfigFile, boolean readFieldsFromConfig) {
         if(loadFromConfigFile) {
             config.load();
+            config.save();
         }
 
         Property propertyMaxRangeMakers = config.get(CATEGORY_NAME_MARKERS, "marker_range", 64);
