@@ -1,10 +1,10 @@
 package com.kyproject.justcopyit.tileentity;
+import com.kyproject.justcopyit.config.JciConfig;
 import com.kyproject.justcopyit.init.Filters;
 import com.kyproject.justcopyit.init.ModItems;
 import com.kyproject.justcopyit.templates.StructureTemplate;
 import com.kyproject.justcopyit.templates.StructureTemplateManager;
 import com.kyproject.justcopyit.util.NBTUtilFix;
-import javafx.geometry.HorizontalDirection;
 import net.minecraft.block.*;
 import net.minecraft.block.properties.PropertyDirection;
 import net.minecraft.block.state.IBlockState;
@@ -25,12 +25,10 @@ import net.minecraftforge.energy.EnergyStorage;
 import net.minecraftforge.energy.IEnergyStorage;
 import net.minecraftforge.fluids.*;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
-import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
 
 import javax.annotation.Nullable;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Objects;
 
@@ -38,6 +36,7 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
 
     private StructureTemplate.BlockPlace blockStructure;
     public static ArrayList<Filters.changeItemFilter> filter = new ArrayList<>();
+    public static ArrayList<String> blacklist = new ArrayList<>();
 
     private ItemStackHandler inventory = new ItemStackHandler(94);
     private Capability<IEnergyStorage> energyCapability = CapabilityEnergy.ENERGY;
@@ -190,10 +189,10 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
     }
 
     private int energyToPlace() {
-        float basePower = 16;
+        double basePower = JciConfig.energyBase;
         double speedPower = basePower + 20 / (5 - this.inventory.getStackInSlot(92).getCount());
         int memory = this.inventory.getStackInSlot(93).getCount() + 1;
-        double memoryPower = memory * 1.5;
+        double memoryPower = memory * JciConfig.energyMemorycardMultiplier;
         double total = (speedPower * memoryPower);
 
         return (int) total;
@@ -279,7 +278,6 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
 
     private void demolishStructure() {
         int creative;
-        this.texture = "orange";
 
         if(!inventory.getStackInSlot(91).getItem().equals(ModItems.BLUEPRINT_CREATIVE)) {
             this.energy.extractEnergy(2, false);
@@ -288,10 +286,26 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
             creative = 3 * this.inventory.getStackInSlot(93).getCount() + 10;
         }
 
+
         int tickCounter = this.getBuildSpeed();
         if (counter == tickCounter) {
             if(this.energy.getEnergyStored() != 0) {
+                this.texture = "orange";
                 for(int memoryUpgrade = 0;memoryUpgrade <= this.inventory.getStackInSlot(93).getCount() + creative;memoryUpgrade++) {
+
+                    boolean blacklisted = true;
+                    while(blacklisted) {
+                        if (countBlocks != -1) {
+                            if(!this.isBlacklisted(countBlocks)) {
+                                blacklisted = false;
+                            } else {
+                                countBlocks--;
+                            }
+                        } else {
+                            blacklisted = false;
+                        }
+                    }
+
                     if (countBlocks != -1) {
                         this.displayCurrentItem();
                         if (blockStructure.blocks.get(countBlocks).isPlaced) {
@@ -323,9 +337,9 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
                             } else {
                                 if(blockStructure.blocks.get(countBlocks).state.equals(stateBlock)) {
                                     for (int slot = 0; slot < inventory.getSlots() - 3; slot++) {
-                                        if (inventory.getStackInSlot(slot).isItemEqual(stateBlock.getBlock().getItem(world, null, stateBlock)) && inventory.getStackInSlot(slot).getMaxStackSize() != inventory.getStackInSlot(slot).getCount()) {
+                                        if (inventory.getStackInSlot(slot).isItemEqual(stateBlock.getBlock().getItem(world, new BlockPos(0,0,0), stateBlock)) && inventory.getStackInSlot(slot).getMaxStackSize() != inventory.getStackInSlot(slot).getCount()) {
                                             if (!world.isRemote) {
-                                                inventory.insertItem(slot, stateBlock.getBlock().getItem(world, null, stateBlock), false);
+                                                inventory.insertItem(slot, stateBlock.getBlock().getItem(world, new BlockPos(0,0,0), stateBlock), false);
                                                 world.destroyBlock(blockPos, false);
                                                 if (!inventory.getStackInSlot(91).getItem().equals(ModItems.BLUEPRINT_CREATIVE)) {
                                                     this.energy.extractEnergy((int) ( this.energyToPlace() * 1.5), false);
@@ -393,6 +407,21 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
 
                     if (!inventory.getStackInSlot(91).isEmpty()) {
                         for(int memoryUpgrade = 0;memoryUpgrade <= this.inventory.getStackInSlot(93).getCount() + creative;memoryUpgrade++) {
+
+                            boolean blacklisted = true;
+                            while(blacklisted) {
+                                if (blockStructure.blocks.size() != countBlocks) {
+                                    if(!this.isBlacklisted(countBlocks)) {
+                                        blacklisted = false;
+                                    } else {
+                                        countBlocks++;
+                                    }
+                                } else {
+                                    blacklisted = false;
+                                }
+                            }
+
+
                             if (blockStructure.blocks.size() != countBlocks) {
                                 if(world.isRemote) {
                                     this.displayCurrentItem();
@@ -513,24 +542,35 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
 
     private void checkStructureBuild() {
         for(int block = 0; block < blockStructure.blocks.size();block++) {
-            BlockPos blockPos = new BlockPos(pos).add(blockStructure.blocks.get(block).x, blockStructure.blocks.get(block).y, blockStructure.blocks.get(block).z);
-            IBlockState structureState = blockStructure.blocks.get(block).state;
-            IBlockState currentState = world.getBlockState(blockPos).getActualState(world, blockPos);
-            ItemStack structureItem = structureState.getBlock().getItem(world, null, structureState);
-            ItemStack currentItem = currentState.getBlock().getItem(world, null, currentState);
+            if(!this.isBlacklisted(block)) {
+                BlockPos blockPos = new BlockPos(pos).add(blockStructure.blocks.get(block).x, blockStructure.blocks.get(block).y, blockStructure.blocks.get(block).z);
+                IBlockState structureState = blockStructure.blocks.get(block).state;
+                IBlockState currentState = world.getBlockState(blockPos).getActualState(world, blockPos);
+                ItemStack structureItem = structureState.getBlock().getItem(world, new BlockPos(0,0,0), structureState);
+                ItemStack currentItem = currentState.getBlock().getItem(world, new BlockPos(0,0,0), currentState);
 
-            if(structureState.getMaterial().isLiquid() && currentState.getMaterial().isLiquid()) {
-                if(structureState == currentState) {
-                    blockStructure.blocks.get(block).isPlaced = true;
-                }
-            } else {
-                if(structureItem.isItemEqual(currentItem)) {
-                    blockStructure.blocks.get(block).isPlaced = true;
+                if (structureState.getMaterial().isLiquid() && currentState.getMaterial().isLiquid()) {
+                    if (structureState == currentState) {
+                        blockStructure.blocks.get(block).isPlaced = true;
+                    }
+                } else {
+                    if (structureItem.isItemEqual(currentItem)) {
+                        blockStructure.blocks.get(block).isPlaced = true;
+                    }
                 }
             }
-
         }
     }
+
+    private boolean isBlacklisted(int block) {
+        for(String registryName : blacklist) {
+            if(blockStructure.blocks.get(block).state.getBlock().getRegistryName().toString().equals(registryName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 
     private int getBuildSpeed() {
         if(this.counter > 4 - inventory.getStackInSlot(92).getCount()){
@@ -736,7 +776,7 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
         }
 
 
-        return inventory.getStackInSlot(slot).isItemEqual(state.getBlock().getItem(world, null, state));
+        return inventory.getStackInSlot(slot).isItemEqual(state.getBlock().getItem(world, new BlockPos(0,0,0), state));
     }
 
     @Override

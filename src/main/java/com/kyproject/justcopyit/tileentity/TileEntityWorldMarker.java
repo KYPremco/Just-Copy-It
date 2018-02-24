@@ -1,5 +1,6 @@
 package com.kyproject.justcopyit.tileentity;
 
+import com.kyproject.justcopyit.config.JciConfig;
 import com.kyproject.justcopyit.init.ModBlocks;
 import net.minecraft.block.properties.PropertyInteger;
 import net.minecraft.entity.player.EntityPlayer;
@@ -27,6 +28,8 @@ public class TileEntityWorldMarker extends TileEntity implements ITickable{
     public BlockPos slaveY;
     public BlockPos slaveZ;
 
+    private int maxRange = JciConfig.maxRangeMarker;
+
 
     public void setLine(BlockPos master, BlockPos slave, EntityPlayer player) {
 
@@ -40,9 +43,15 @@ public class TileEntityWorldMarker extends TileEntity implements ITickable{
         if(x && !z && !y) {
             if(this.slaveX == null) {
                 this.rangeX = slaveX - masterX;
-                this.slaveX = slave;
-                world.setBlockState(slave, ModBlocks.WORLD_MARKER.getDefaultState().withProperty(DAMAGE, 2));
-                this.sendMessage("Linked", player);
+                if(maxRange(this.rangeX)) {
+                    this.slaveX = slave;
+                    world.setBlockState(slave, ModBlocks.WORLD_MARKER.getDefaultState().withProperty(DAMAGE, 2));
+                    this.sendMessage("Linked", player);
+                } else {
+                    this.sendMessage("Max range is " + maxRange, player);
+                    world.setBlockState(slave, ModBlocks.WORLD_MARKER.getDefaultState().withProperty(DAMAGE, 0));
+                    this.rangeX = 0;
+                }
             } else {
                 this.sendMessage("Another X slave is already linked", player);
                 world.setBlockState(slave, ModBlocks.WORLD_MARKER.getDefaultState().withProperty(DAMAGE, 0));
@@ -50,9 +59,15 @@ public class TileEntityWorldMarker extends TileEntity implements ITickable{
         } else if (y && !x && !z) {
             if(this.slaveY == null) {
                 this.rangeY = slaveY - masterY;
-                this.slaveY = slave;
-                world.setBlockState(slave, ModBlocks.WORLD_MARKER.getDefaultState().withProperty(DAMAGE, 2));
-                this.sendMessage("Linked", player);
+                if(maxRange(this.rangeY)) {
+                    this.slaveY = slave;
+                    world.setBlockState(slave, ModBlocks.WORLD_MARKER.getDefaultState().withProperty(DAMAGE, 2));
+                    this.sendMessage("Linked", player);
+                } else {
+                    this.sendMessage("Max range is " + maxRange, player);
+                    world.setBlockState(slave, ModBlocks.WORLD_MARKER.getDefaultState().withProperty(DAMAGE, 0));
+                    this.rangeY = 0;
+                }
             } else {
                 this.sendMessage("Another Y slave is already linked", player);
                 world.setBlockState(slave, ModBlocks.WORLD_MARKER.getDefaultState().withProperty(DAMAGE, 0));
@@ -60,9 +75,15 @@ public class TileEntityWorldMarker extends TileEntity implements ITickable{
         } else if(z && !x && !y) {
             if(this.slaveZ == null) {
                 this.rangeZ = slaveZ - masterZ;
-                this.slaveZ = slave;
-                world.setBlockState(slave, ModBlocks.WORLD_MARKER.getDefaultState().withProperty(DAMAGE, 2));
-                this.sendMessage("Linked", player);
+                if(maxRange(this.rangeZ)) {
+                    this.slaveZ = slave;
+                    world.setBlockState(slave, ModBlocks.WORLD_MARKER.getDefaultState().withProperty(DAMAGE, 2));
+                    this.sendMessage("Linked", player);
+                } else {
+                    this.sendMessage("Max range is 10", player);
+                    world.setBlockState(slave, ModBlocks.WORLD_MARKER.getDefaultState().withProperty(DAMAGE, 0));
+                    this.rangeZ = 0;
+                }
             } else {
                 this.sendMessage("Another Z slave is already linked", player);
                 world.setBlockState(slave, ModBlocks.WORLD_MARKER.getDefaultState().withProperty(DAMAGE, 0));
@@ -75,6 +96,11 @@ public class TileEntityWorldMarker extends TileEntity implements ITickable{
         world.notifyBlockUpdate(pos, world.getBlockState(pos), world.getBlockState(pos), 3);
     }
 
+    private boolean maxRange(int range) {
+        range = Math.abs(range);
+        return range <= maxRange;
+    }
+
     private void sendMessage(String message, EntityPlayer player) {
         if(!world.isRemote) {
             player.sendMessage(new TextComponentString(message));
@@ -85,6 +111,7 @@ public class TileEntityWorldMarker extends TileEntity implements ITickable{
     public void update() {
         if(slaveX != null) {
             if (!world.getBlockState(slaveX).getBlock().equals(ModBlocks.WORLD_MARKER)) {
+
                 rangeX = 0;
                 slaveX = null;
             }

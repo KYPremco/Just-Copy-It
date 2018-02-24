@@ -17,14 +17,18 @@ public class Filters {
 
     private ArrayList<String> layerFilter = new ArrayList<>();
 
+    private ArrayList<String> itemBlacklist = new ArrayList<>();
+
     public Filters() {
         this.createItemFilter();
         this.createLayerFilter();
+        this.createItemBlacklist();
     }
 
     public void createFilter()  {
         File itemFilterFile = new File("resources\\JustCopyIt\\changeItemFilter.json");
         File layerFilterFile = new File("resources\\JustCopyIt\\layerFilter.json");
+        File itemBlackList = new File("resources\\JustCopyIt\\itemBlacklist.json");
 
         if(!itemFilterFile.exists()) {
             Gson gson = new Gson();
@@ -48,22 +52,37 @@ public class Filters {
             }
         }
 
+        if(!itemBlackList.exists()) {
+            Gson gson = new Gson();
+            try {
+                FileWriter writer = new FileWriter("resources\\JustCopyIt\\itemBlacklist.json");
+                writer.write(gson.toJson(this.itemBlacklist));
+                writer.close();
+            } catch (IOException e) {
+                JustCopyIt.logger.warn(e);
+            }
+        }
+
     }
 
     private void createItemFilter() {
         changeItemFilter.add(new changeItemFilter("minecraft:farmland", "minecraft:dirt"));
         changeItemFilter.add(new changeItemFilter("minecraft:grass", "minecraft:dirt"));
-        changeItemFilter.add(new changeItemFilter("minecraft:wheat", "minecraft:wheat_seeds"));
-        changeItemFilter.add(new changeItemFilter("minecraft:melon_stem", "minecraft:melon_seeds"));
-        changeItemFilter.add(new changeItemFilter("minecraft:beetroots", "minecraft:beetroot_seeds"));
-        changeItemFilter.add(new changeItemFilter("minecraft:nether_wart", "minecraft:nether_wart_seeds"));
-        changeItemFilter.add(new changeItemFilter("minecraft:carrots", "minecraft:carrot"));
-        changeItemFilter.add(new changeItemFilter("minecraft:potatoes", "minecraft:potato"));
     }
 
     private void createLayerFilter() {
         layerFilter.add("minecraft:torch");
         layerFilter.add("minecraft:ladder");
+        layerFilter.add("minecraft:wheat");
+        layerFilter.add("minecraft:melon_stem");
+        layerFilter.add("minecraft:beetroots");
+        layerFilter.add("minecraft:nether_wart");
+        layerFilter.add("minecraft:carrots");
+        layerFilter.add("minecraft:potatoes");
+    }
+
+    private void createItemBlacklist() {
+        itemBlacklist.add("minecraft:double_grass");
     }
 
     public static class changeItemFilter {
@@ -82,6 +101,16 @@ public class Filters {
             return new Gson().fromJson(new FileReader("resources\\JustCopyIt\\changeItemFilter.json"), type);
         } catch (IOException e) {
             JustCopyIt.logger.error(e);
+        }
+        return null;
+    }
+
+    public ArrayList<String> readJsonBlacklist() {
+        try {
+            Type type = new TypeToken<ArrayList<String>>(){}.getType();
+            return new Gson().fromJson(new FileReader("resources\\JustCopyIt\\itemBlacklist.json"), type);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
         return null;
     }

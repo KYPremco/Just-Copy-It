@@ -48,7 +48,7 @@ public class GuiExportStructureContainer extends GuiContainer {
 
     @Override
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
-        fontRenderer.drawString(new TextComponentTranslation("tile.tutorial_container.name").getFormattedText(), 5, 5, Color.darkGray.getRGB());
+        fontRenderer.drawString(new TextComponentTranslation("tile.export_structure.name").getFormattedText(), 5, 5, Color.darkGray.getRGB());
         fontRenderer.drawString("Name", 5, 20, Color.black.getRGB());
         fontRenderer.drawString("Max uses:", 75, 80, Color.black.getRGB());
         fontRenderer.drawString(Integer.toString(te.getDurability()), 125, 80, Color.black.getRGB());

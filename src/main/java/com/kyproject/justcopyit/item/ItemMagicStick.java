@@ -40,6 +40,7 @@ public class ItemMagicStick extends ItemBase {
         if(!worldIn.isRemote) {
             player.sendMessage(new TextComponentString(worldIn.getBlockState(pos).getBlock().getRegistryName().toString()));
         }
+        System.out.println(worldIn.getBlockState(pos).getBlock().getItem(worldIn, new BlockPos(0,0,0), worldIn.getBlockState(pos)));
         return super.onItemUse(player, worldIn, pos, hand, facing, hitX, hitY, hitZ);
     }
 }

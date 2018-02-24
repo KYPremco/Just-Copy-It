@@ -32,10 +32,9 @@ public class StructureTemplateManager {
 
     public void placeBlockInWorld(BlockPos blockPos, IBlockState stateBlock, @Nullable NBTTagCompound nbt) {
         if(!world.isRemote) {
-            System.out.println(blockPos);
             if (stateBlock instanceof ItemSeeds) {
                 world.setBlockState(blockPos, stateBlock.getBlock().getDefaultState(), 3);
-            } else if(stateBlock.getBlock().getItem(world, null, stateBlock).getItem() instanceof ItemDoor) {
+            } else if(stateBlock.getBlock().getItem(world, new BlockPos(0,0,0), stateBlock).getItem() instanceof ItemDoor) {
                 ItemDoor.placeDoor(world, blockPos, stateBlock.getValue(BlockHorizontal.FACING), stateBlock.getBlock(), false);
             } else {
                 world.setBlockState(blockPos, stateBlock, 3);
@@ -58,8 +57,7 @@ public class StructureTemplateManager {
             Fluid fluid = FluidRegistry.lookupFluidForBlock(block);
             return FluidUtil.getFilledBucket(new FluidStack(fluid, 1000));
         }
-
-        return block.getItem(world, null, blockState);
+        return block.getItem(world, new BlockPos(0,0,0), blockState);
     }
 
     public void removeItemFromContainer(ItemStackHandler inventory, int slot, boolean isLiquid) {

@@ -69,11 +69,13 @@ public class JciCommands extends CommandBase {
     private void reloadFitler(ICommandSender sender) {
         Filters filter = new Filters();
         TileEntityBuilder.filter = filter.readJsonFilter();
+        TileEntityBuilder.blacklist = filter.readJsonBlacklist();
         StructureTemplate structureTemplate = new StructureTemplate();
-        structureTemplate.loadBlockItemFilter();
+        structureTemplate.loadBlockLayerFilter();
 
         sender.sendMessage( new TextComponentString("§2[JCI] Filter is updated!"));
         sender.sendMessage( new TextComponentString("§2[JCI] Layer filter is updated!"));
+        sender.sendMessage( new TextComponentString("§2[JCI] Blacklist is updated!"));
 
     }
 

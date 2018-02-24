@@ -125,7 +125,7 @@ public class StructureTemplate {
         structure = new BlockPlace(type, name, facing, durability, rangeX, rangeY, rangeZ, this.blocks);
     }
 
-    public void loadBlockItemFilter() {
+    public void loadBlockLayerFilter() {
         try {
             Type type = new TypeToken<ArrayList<String>>(){}.getType();
             blockItemFilter = new Gson().fromJson(new FileReader("resources\\JustCopyIt\\layerFilter.json"), type);
@@ -133,6 +133,7 @@ public class StructureTemplate {
             e.printStackTrace();
         }
     }
+
     public String createNBTFile(String name, NBTTagCompound structure) {
         File file = new File("resources\\JustCopyIt\\structures\\" + name + ".dat");
 

@@ -21,6 +21,8 @@ public class RenderBuilder extends TileEntitySpecialRenderer<TileEntityBuilder> 
     @Override
     public void render(TileEntityBuilder te, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
         super.render(te, x, y, z, partialTicks, destroyStage, alpha);
+
+
         EnumFacing facing = te.facing;
         if(facing == null) {
             facing = EnumFacing.getFront(te.getBlockMetadata());
@@ -215,8 +217,6 @@ public class RenderBuilder extends TileEntitySpecialRenderer<TileEntityBuilder> 
         GlStateManager.enableLighting();
         GlStateManager.popMatrix();
 
-
-
         if(te.needItem != null) {
             EntityItem entityItem0 = new EntityItem(Minecraft.getMinecraft().world, 0, 0, 0, te.needItem);
             entityItem0.hoverStart = 0F;
@@ -230,6 +230,7 @@ public class RenderBuilder extends TileEntitySpecialRenderer<TileEntityBuilder> 
             GlStateManager.popMatrix();
             GL11.glColor4f(1, 1, 1, 1);
         }
+
     }
 
     @Override

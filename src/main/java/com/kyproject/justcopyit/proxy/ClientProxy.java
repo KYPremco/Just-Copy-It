@@ -1,7 +1,9 @@
 package com.kyproject.justcopyit.proxy;
 
+import com.kyproject.justcopyit.config.JciConfig;
 import com.kyproject.justcopyit.block.render.RenderAreaLine;
 import com.kyproject.justcopyit.block.render.RenderBuilder;
+import com.kyproject.justcopyit.config.JciConfigGuiFactory;
 import com.kyproject.justcopyit.tileentity.TileEntityBuilder;
 import com.kyproject.justcopyit.tileentity.TileEntityWorldMarker;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
@@ -13,7 +15,7 @@ public class ClientProxy extends CommonProxy {
 
     @Override
     public void preInit(FMLPreInitializationEvent event) {
-
+        JciConfig.clientPreInit();
     }
 
     @Override
