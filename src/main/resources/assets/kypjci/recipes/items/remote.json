@@ -1,13 +1,27 @@
 {
   "type": "minecraft:crafting_shaped",
   "pattern": [
-    "CCC",
-    "C C",
-    "CCC"
+    "CCD",
+    "GPG",
+    "CMC"
   ],
   "key": {
     "C": {
-      "item": "minecraft:coal"
+      "item": "minecraft:coal",
+      "data": 0
+    },
+    "D": {
+      "item": "minecraft:diamond"
+    },
+    "P": {
+      "item": "kypjci:processor"
+    },
+    "M": {
+      "item": "kypjci:memory"
+    },
+    "G": {
+      "item": "minecraft:glass_pane",
+      "data": 0
     }
   },
   "result": {
