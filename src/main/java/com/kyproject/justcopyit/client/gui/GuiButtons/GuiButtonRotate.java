@@ -8,9 +8,8 @@ import net.minecraft.util.ResourceLocation;
 public class GuiButtonRotate extends GuiButton {
 
     final ResourceLocation texture = new ResourceLocation(JustCopyIt.MODID, "textures/gui/buttons.png");
-    public boolean checked = true;
-    int u = 204;
-    int v = 42;
+    int u = 0;
+    int v = 36;
 
     public GuiButtonRotate(int buttonId, int x, int y) {
         super(buttonId, x, y, 18, 18, "");
@@ -26,9 +25,9 @@ public class GuiButtonRotate extends GuiButton {
                 hovered = false;
             }
             if(hovered) {
-                u = 224;
+                u = 18;
             } else {
-                u = 204;
+                u = 0;
             }
             drawTexturedModalRect(x, y, u, v, width, height);
         }

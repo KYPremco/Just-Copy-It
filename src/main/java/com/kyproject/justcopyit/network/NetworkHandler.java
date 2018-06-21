@@ -18,7 +18,7 @@ public class NetworkHandler {
         INSTANCE.registerMessage(MessageHandleGuiScannerButton.class, MessageHandleGuiScannerButton.class, 2, Side.SERVER);
     }
 
-    public static void sendToServer(IMessage message){
+    public static void sendToServer(IMessage message) {
         INSTANCE.sendToServer(message);
     }
 

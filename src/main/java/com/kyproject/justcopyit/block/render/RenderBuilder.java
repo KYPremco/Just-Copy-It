@@ -13,6 +13,7 @@ import net.minecraft.entity.item.EntityItem;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GLSync;
 
 import java.awt.*;
 
@@ -21,8 +22,6 @@ public class RenderBuilder extends TileEntitySpecialRenderer<TileEntityBuilder> 
     @Override
     public void render(TileEntityBuilder te, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
         super.render(te, x, y, z, partialTicks, destroyStage, alpha);
-
-
         EnumFacing facing = te.facing;
         if(facing == null) {
             facing = EnumFacing.getFront(te.getBlockMetadata());
@@ -35,38 +34,38 @@ public class RenderBuilder extends TileEntitySpecialRenderer<TileEntityBuilder> 
         double posY = te.rangeY;
         double posZ = te.rangeZ;
         if(posX != 0 || posY != 0 || posZ != 0) {
-        GL11.glPushMatrix();
-        GL11.glPushAttrib(GL11.GL_ENABLE_BIT);
+            GL11.glPushMatrix();
+            GL11.glPushAttrib(GL11.GL_ENABLE_BIT);
 
-        GL11.glDisable(GL11.GL_TEXTURE_2D);
-        GlStateManager.translate(x, y, z);
-        Color color = new Color(255, 255, 0, 50);
-        GL11.glColor4d(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
-        GL11.glLineWidth(3F);
-        bufferbuilder.begin(GL11.GL_LINES, DefaultVertexFormats.POSITION_COLOR);
-        double width = 0.5;
-        double exPosX = 0;
-        double exPosZ = 0;
-        switch (facing) {
-            case NORTH:
-                exPosX = 0;
-                exPosZ = -1;
-                break;
-            case EAST:
-                exPosX = 1;
-                exPosZ = 0;
-                break;
-            case WEST:
-                exPosX = -1;
-                exPosZ = 0;
-                break;
-            case SOUTH:
-                exPosX = 0;
-                exPosZ = 1;
-                break;
-            default:
-                break;
-        }
+            GL11.glDisable(GL11.GL_TEXTURE_2D);
+            GlStateManager.translate(x, y, z);
+            Color color = new Color(255, 255, 0, 50);
+            GL11.glColor4d(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
+            GL11.glLineWidth(3F);
+            bufferbuilder.begin(GL11.GL_LINES, DefaultVertexFormats.POSITION_COLOR);
+            double width = 0.5;
+            double exPosX = 0;
+            double exPosZ = 0;
+            switch (facing) {
+                case NORTH:
+                    exPosX = 0;
+                    exPosZ = -1;
+                    break;
+                case EAST:
+                    exPosX = 1;
+                    exPosZ = 0;
+                    break;
+                case WEST:
+                    exPosX = -1;
+                    exPosZ = 0;
+                    break;
+                case SOUTH:
+                    exPosX = 0;
+                    exPosZ = 1;
+                    break;
+                default:
+                    break;
+            }
 
             GlStateManager.pushMatrix();
             OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 175, 240);
@@ -217,6 +216,8 @@ public class RenderBuilder extends TileEntitySpecialRenderer<TileEntityBuilder> 
         GlStateManager.enableLighting();
         GlStateManager.popMatrix();
 
+
+
         if(te.needItem != null) {
             EntityItem entityItem0 = new EntityItem(Minecraft.getMinecraft().world, 0, 0, 0, te.needItem);
             entityItem0.hoverStart = 0F;
@@ -230,8 +231,8 @@ public class RenderBuilder extends TileEntitySpecialRenderer<TileEntityBuilder> 
             GlStateManager.popMatrix();
             GL11.glColor4f(1, 1, 1, 1);
         }
-
     }
+
 
     @Override
     public boolean isGlobalRenderer(TileEntityBuilder te) {

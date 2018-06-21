@@ -80,7 +80,7 @@ public class TileEntityWorldMarker extends TileEntity implements ITickable{
                     world.setBlockState(slave, ModBlocks.WORLD_MARKER.getDefaultState().withProperty(DAMAGE, 2));
                     this.sendMessage("Linked", player);
                 } else {
-                    this.sendMessage("Max range is 10", player);
+                    this.sendMessage("Max range is " + maxRange, player);
                     world.setBlockState(slave, ModBlocks.WORLD_MARKER.getDefaultState().withProperty(DAMAGE, 0));
                     this.rangeZ = 0;
                 }

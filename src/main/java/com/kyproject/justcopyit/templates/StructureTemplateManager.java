@@ -5,11 +5,13 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockDoor;
 import net.minecraft.block.BlockHorizontal;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemDoor;
 import net.minecraft.item.ItemSeeds;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
@@ -22,6 +24,8 @@ import net.minecraftforge.fluids.FluidUtil;
 import net.minecraftforge.items.ItemStackHandler;
 
 import javax.annotation.Nullable;
+import java.io.File;
+import java.io.IOException;
 
 public class StructureTemplateManager {
     private World world;
@@ -68,6 +72,52 @@ public class StructureTemplateManager {
                 inventory.setStackInSlot(slot, new ItemStack(Items.BUCKET));
             }
         }
+    }
+
+    public String createNBTFile(String name, NBTTagCompound structure) {
+        File file = new File("resources\\JustCopyIt\\structures\\" + name + ".dat");
+
+        if(!file.exists()) {
+            try {
+                CompressedStreamTools.safeWrite(structure, file);
+                return "Finished";
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+            return "File already exist";
+        }
+
+        return "Something went wrong!";
+    }
+
+    public NBTTagCompound readNBTFile(String fileName) {
+        return this.getNBTFile(fileName);
+    }
+
+    private NBTTagCompound getNBTFile(String fileName) {
+        try {
+            return CompressedStreamTools.read(new File("resources\\JustCopyIt\\structures\\" + fileName + ".dat"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public String generateNewStructureName() {
+        int Duplicates = 0;
+        File file = new File("resources\\JustCopyIt\\structures\\" + world.getTotalWorldTime() + "_" + Duplicates + ".dat");
+
+        while(file.exists()) {
+            Duplicates++;
+            File newFile = new File("resources\\JustCopyIt\\structures\\" + world.getTotalWorldTime() + "_" + Duplicates + ".dat");
+
+            if(!newFile.exists()) {
+                break;
+            }
+        }
+
+        return world.getTotalWorldTime() + "_" + Duplicates;
     }
 
 }

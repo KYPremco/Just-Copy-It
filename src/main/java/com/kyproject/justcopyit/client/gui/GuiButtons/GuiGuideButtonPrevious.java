@@ -31,7 +31,6 @@ public class GuiGuideButtonPrevious extends GuiButton {
             }
             drawTexturedModalRect(x, y, u, v, width, height);
         }
-        super.drawButton(mc, mouseX, mouseY, partialTicks);
     }
 
 }

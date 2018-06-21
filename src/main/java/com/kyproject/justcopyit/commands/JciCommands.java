@@ -4,6 +4,7 @@ import com.kyproject.justcopyit.JustCopyIt;
 import com.kyproject.justcopyit.init.Filters;
 import com.kyproject.justcopyit.init.ModItems;
 import com.kyproject.justcopyit.templates.StructureTemplate;
+import com.kyproject.justcopyit.templates.StructureTemplateManager;
 import com.kyproject.justcopyit.tileentity.TileEntityBuilder;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
@@ -84,9 +85,9 @@ public class JciCommands extends CommandBase {
             if(!args[1].equals("?") && !args[1].equals("help")) {
                 EntityPlayer player = (EntityPlayer) sender;
                 World world = ((EntityPlayer) sender).world;
-                StructureTemplate structureTemplate = new StructureTemplate();
+                StructureTemplateManager structureTemplateManager = new StructureTemplateManager(world);
 
-                NBTTagCompound nbt = structureTemplate.getNBT(args[1]);
+                NBTTagCompound nbt = structureTemplateManager.readNBTFile(args[1]);
 
                 if(nbt != null) {
                     if(args.length > 2) {

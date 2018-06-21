@@ -1,10 +1,10 @@
 package com.kyproject.justcopyit.tileentity;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.kyproject.justcopyit.init.ModItems;
 import com.kyproject.justcopyit.templates.StructureTemplate;
+import com.kyproject.justcopyit.templates.StructureTemplateManager;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.nbt.CompressedStreamTools;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTUtil;
@@ -12,25 +12,32 @@ import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.ITickable;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
 
 import javax.annotation.Nullable;
-import java.io.*;
-import java.util.ArrayList;
 
-public class TileEntityExport extends TileEntity {
+public class TileEntityExport extends TileEntity implements ITickable {
 
     private ItemStackHandler inventory = new ItemStackHandler(1);
     private int durability = 0;
     private String state = "Idle";
 
+    private StructureTemplate structureTemplate;
+    private boolean isScanning = false;
+    private int counter = 0;
+    private String name;
+    private int yValue = 0;
+    private int zValueStart = 0;
+    private int maxRows = 0;
+
     public void buttonPressed(int id, String name) {
         switch (id) {
             case 0:
-                this.createStructure(name);
+                this.startScanner(name);
                 break;
             case 1:
                 durability++;
@@ -42,6 +49,36 @@ public class TileEntityExport extends TileEntity {
                 break;
             default:
                 break;
+        }
+    }
+
+    private void startScanner(String name) {
+        structureTemplate = new StructureTemplate();
+        isScanning = true;
+        counter = 0;
+        maxRows = 0;
+        zValueStart = 0;
+        yValue = 0;
+        this.name = name;
+    }
+
+    private void calculateMaxRows(int z, int x) {
+        double square = Math.sqrt(Math.abs(z) * Math.abs(x));
+        double max = 8000D / square;
+
+
+        maxRows = (int) Math.ceil(max);
+    }
+
+    @Override
+    public void update() {
+        if(isScanning) {
+            if(counter == 1) {
+                createStructure();
+                counter++;
+            } else {
+                counter++;
+            }
         }
     }
 
@@ -68,10 +105,8 @@ public class TileEntityExport extends TileEntity {
         return rangeCalculator;
     }
 
-    private void createStructure(String name) {
-        this.setState("Creating...");
-
-        StructureTemplate structureTemplate = new StructureTemplate();
+    private void createStructure() {
+        StructureTemplateManager structureTemplateManager = new StructureTemplateManager(world);
 
         EnumFacing forward = EnumFacing.getFront(this.getBlockMetadata());
         int fX = forward.getFrontOffsetX();
@@ -94,63 +129,78 @@ public class TileEntityExport extends TileEntity {
             rangeZ = te.rangeZ;
         }
 
+
         // if nothing is in slot just skip it! and range is all filled
         if(rangeX  != 0 && rangeY != 0 && rangeZ != 0) {
+            if(maxRows == 0) {
+                this.calculateMaxRows(rangeZ, rangeX);
+                yValue = this.rangeCalculator(rangeY)[0];
+                zValueStart = this.rangeCalculator(rangeZ)[0];
+            }
+
             // Creating the structure arrayList
-            for (int y = this.rangeCalculator(rangeY)[0]; y < this.rangeCalculator(rangeY)[1]; y++) {
-                for (int x = this.rangeCalculator(rangeX)[0]; x < this.rangeCalculator(rangeX)[1]; x++) {
-                    for (int z = this.rangeCalculator(rangeZ)[0]; z < this.rangeCalculator(rangeZ)[1]; z++) {
-                        if (!world.isAirBlock(pos.add(x + fX, y, z + fZ))) {
-                            if (world.getBlockState(pos.add(x + fX, y, z + fZ)).getMaterial().isLiquid()) {
-                                if (world.getBlockState(pos.add(x + fX, y, z + fZ)).getBlock().getMetaFromState(world.getBlockState(pos.add(x + fX, y, z + fZ)).getActualState(world, pos.add(x + fX, y, z + fZ))) == 0) {
-                                    IBlockState state = world.getBlockState(pos.add(x + fX, y, z + fZ)).getActualState(world, pos.add(x + fX, y, z + fZ));
-                                    structureTemplate.addLayer("liquid", x + fX, y, z + fZ, state, world, pos);
+            if(yValue < this.rangeCalculator(rangeY)[1]) {
+                this.setState("Scanning...");
+                for (int z = zValueStart; z < zValueStart + maxRows; z++) {
+                    if(z >= this.rangeCalculator(rangeZ)[1]) {
+                        break;
+                    }
+                    for (int x = this.rangeCalculator(rangeX)[0]; x < this.rangeCalculator(rangeX)[1]; x++) {
+                        if (!world.isAirBlock(pos.add(x + fX, yValue, z + fZ))) {
+                            if (world.getBlockState(pos.add(x + fX, yValue, z + fZ)).getMaterial().isLiquid()) {
+                                if (world.getBlockState(pos.add(x + fX, yValue, z + fZ)).getBlock().getMetaFromState(world.getBlockState(pos.add(x + fX, yValue, z + fZ)).getActualState(world, pos.add(x + fX, yValue, z + fZ))) == 0) {
+                                    IBlockState state = world.getBlockState(pos.add(x + fX, yValue, z + fZ)).getActualState(world, pos.add(x + fX, yValue, z + fZ));
+                                    structureTemplate.addLayer("liquid", x + fX, yValue, z + fZ, state, world, pos);
                                 }
                             } else {
-                                IBlockState state = world.getBlockState(pos.add(x + fX, y, z + fZ)).getActualState(world, pos.add(x + fX, y, z + fZ));
-                                structureTemplate.addLayer("blockLayer", x + fX, y, z + fZ, state, world, pos);
+                                IBlockState state = world.getBlockState(pos.add(x + fX, yValue, z + fZ)).getActualState(world, pos.add(x + fX, yValue, z + fZ));
+                                structureTemplate.addLayer("blockLayer", x + fX, yValue, z + fZ, state, world, pos);
                             }
                         }
                     }
                 }
-            }
-            structureTemplate.combine();
 
-            // durability  -1 = infinity
-            if(durability == 0) {
-                structureTemplate.create("file", name, forward, -1, rangeX, rangeY, rangeZ);
+                yValue++;
+                counter = 0;
             } else {
-                structureTemplate.create("file", name, forward, durability, rangeX, rangeY, rangeZ);
-            }
-            StructureTemplate.BlockPlace structure = structureTemplate.getStructure();
-            NBTTagCompound nbt = new NBTTagCompound();
+                structureTemplate.combine();
+                isScanning = false;
 
-            // Creating structure list
-            NBTTagList tagList = new NBTTagList();
-            for (int i = 0; i < structure.blocks.size(); i++) {
-                if (structure.blocks.get(i) != null) {
-                    NBTTagCompound tag = new NBTTagCompound();
-                    tag.setInteger("blockX" + i, structure.blocks.get(i).x);
-                    tag.setInteger("blockY" + i, structure.blocks.get(i).y);
-                    tag.setInteger("blockZ" + i, structure.blocks.get(i).z);
-                    NBTUtil.writeBlockState(tag, structure.blocks.get(i).state);
-                    if(structure.blocks.get(i).nbtTagCompound != null) {
-                        tag.setTag("nbt", structure.blocks.get(i).nbtTagCompound);
-                    }
-                    tagList.appendTag(tag);
+                // durability  -1 = infinity
+                if(durability == 0) {
+                    structureTemplate.create("file", name, forward, -1, rangeX, rangeY, rangeZ);
+                } else {
+                    structureTemplate.create("file", name, forward, durability, rangeX, rangeY, rangeZ);
                 }
+                StructureTemplate.BlockPlace structure = structureTemplate.getStructure();
+                NBTTagCompound nbt = new NBTTagCompound();
+
+                // Creating structure list
+                NBTTagList tagList = new NBTTagList();
+                for (int i = 0; i < structure.blocks.size(); i++) {
+                    if (structure.blocks.get(i) != null) {
+                        NBTTagCompound tag = new NBTTagCompound();
+                        tag.setInteger("blockX" + i, structure.blocks.get(i).x);
+                        tag.setInteger("blockY" + i, structure.blocks.get(i).y);
+                        tag.setInteger("blockZ" + i, structure.blocks.get(i).z);
+                        NBTUtil.writeBlockState(tag, structure.blocks.get(i).state);
+                        if(structure.blocks.get(i).nbtTagCompound != null) {
+                            tag.setTag("nbt", structure.blocks.get(i).nbtTagCompound);
+                        }
+                        tagList.appendTag(tag);
+                    }
+                }
+                nbt.setTag("blocks", tagList);
+                nbt.setString("type", structure.type);
+                nbt.setString("name", structure.name);
+                nbt.setInteger("durability", structure.durability);
+                nbt.setInteger("rangeX", rangeX);
+                nbt.setInteger("rangeY", rangeY);
+                nbt.setInteger("rangeZ", rangeZ);
+                nbt.setString("facing", structure.facing.toString());
+
+                this.setState(structureTemplateManager.createNBTFile(name, nbt));
             }
-            nbt.setTag("blocks", tagList);
-            nbt.setString("type", structure.type);
-            nbt.setString("name", structure.name);
-            nbt.setInteger("durability", structure.durability);
-            nbt.setInteger("rangeX", rangeX);
-            nbt.setInteger("rangeY", rangeY);
-            nbt.setInteger("rangeZ", rangeZ);
-            nbt.setString("facing", structure.facing.toString());
-
-            this.setState(structureTemplate.createNBTFile(name, nbt));
-
         } else {
             this.setState("Error: no area found");
         }

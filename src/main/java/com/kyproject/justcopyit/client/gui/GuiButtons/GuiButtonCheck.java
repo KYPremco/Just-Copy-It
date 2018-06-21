@@ -8,7 +8,7 @@ import net.minecraft.util.ResourceLocation;
 public class GuiButtonCheck extends GuiButton {
 
     final ResourceLocation texture = new ResourceLocation(JustCopyIt.MODID, "textures/gui/buttons.png");
-    public boolean checked = true;
+    public boolean checked;
     int u = 0;
     int v = 0;
 

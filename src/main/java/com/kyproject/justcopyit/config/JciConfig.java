@@ -54,22 +54,21 @@ public class JciConfig {
     private static void syncConfig(boolean loadFromConfigFile, boolean readFieldsFromConfig) {
         if(loadFromConfigFile) {
             config.load();
-            config.save();
         }
 
         Property propertyMaxRangeMakers = config.get(CATEGORY_NAME_MARKERS, "marker_range", 64);
         propertyMaxRangeMakers.setLanguageKey("gui.config.markers.max_range.name");
-        propertyMaxRangeMakers.setComment(I18n.format("gui.config.markers.max_range.comment"));
+        propertyMaxRangeMakers.setComment("gui.config.markers.max_range.comment");
         propertyMaxRangeMakers.setMinValue(10);
 
         Property propertyEnergyBase = config.get(CATEGORY_NAME_ENERGY, "energy_base", 16D);
         propertyEnergyBase.setLanguageKey("gui.config.energy.energy_base.name");
-        propertyEnergyBase.setComment(I18n.format("gui.config.energy.energy_base.comment"));
+        propertyEnergyBase.setComment("gui.config.energy.energy_base.comment");
         propertyEnergyBase.setMinValue(1);
 
         Property propertyEnergyMemorycardMultiplier = config.get(CATEGORY_NAME_ENERGY, "energy_memorycard_multiplier", 1.5D);
         propertyEnergyMemorycardMultiplier.setLanguageKey("gui.config.energy.energy_memorycard_multiplier.name");
-        propertyEnergyMemorycardMultiplier.setComment(I18n.format("gui.config.energy.energy_memorycard_multiplier.comment"));
+        propertyEnergyMemorycardMultiplier.setComment("gui.config.energy.energy_memorycard_multiplier.comment");
         propertyEnergyMemorycardMultiplier.setMinValue(1);
 
 

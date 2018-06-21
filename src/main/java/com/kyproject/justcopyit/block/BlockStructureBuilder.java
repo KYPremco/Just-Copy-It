@@ -65,6 +65,8 @@ public class BlockStructureBuilder extends BlockBase implements ITileEntityProvi
     }
 
 
+
+
     @Override
     public boolean canConnectRedstone(IBlockState state, IBlockAccess world, BlockPos pos, @Nullable EnumFacing side) {
         return super.canConnectRedstone(state, world, pos, side);

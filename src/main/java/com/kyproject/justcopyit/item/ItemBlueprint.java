@@ -1,9 +1,12 @@
 package com.kyproject.justcopyit.item;
 
+import com.kyproject.justcopyit.JustCopyIt;
+import com.kyproject.justcopyit.client.GuiHandler;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
@@ -25,10 +28,9 @@ public class ItemBlueprint extends ItemBase {
 
     @Override
     public void addInformation(ItemStack stack, @Nullable World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
-        if (stack.hasTagCompound() && stack.getTagCompound().hasKey("type"))
-        {
+        if (stack.hasTagCompound() && stack.getTagCompound().hasKey("type")) {
             if(Objects.equals(stack.getTagCompound().getString("type"), "card")) {
-                tooltip.add("Blocks: " + stack.getTagCompound().getTagList("blocks", Constants.NBT.TAG_COMPOUND).tagCount());
+                tooltip.add("Blocks: " + stack.getTagCompound().getInteger("blockCount"));
             } else {
                 if(stack.getTagCompound() != null) {
                     NBTTagCompound nbt = stack.getTagCompound();
@@ -48,7 +50,8 @@ public class ItemBlueprint extends ItemBase {
     }
 
     @Override
-    public EnumActionResult onItemUse(EntityPlayer player, World worldIn, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
-        return super.onItemUse(player, worldIn, pos, hand, facing, hitX, hitY, hitZ);
+    public ActionResult<ItemStack> onItemRightClick(World worldIn, EntityPlayer playerIn, EnumHand handIn) {
+        playerIn.openGui(JustCopyIt.instance, GuiHandler.GUI_ITEM_LIST,worldIn,0,0,0);
+        return super.onItemRightClick(worldIn, playerIn, handIn);
     }
 }

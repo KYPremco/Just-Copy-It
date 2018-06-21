@@ -200,33 +200,38 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
 
     private StructureTemplate.BlockPlace getStructure() {
         StructureTemplate structureTemplate = new StructureTemplate();
+        StructureTemplateManager structureTemplateManager = new StructureTemplateManager(world);
 
         // Reading
         if(inventory.getStackInSlot(91) != ItemStack.EMPTY) {
             if(inventory.getStackInSlot(91).getItem() == ModItems.BLUEPRINT || inventory.getStackInSlot(91).getItem() == ModItems.BLUEPRINT_CREATIVE) {
                 if(inventory.getStackInSlot(91).hasTagCompound()) {
                     if(inventory.getStackInSlot(91).getTagCompound().hasKey("type")) {
-                        NBTTagCompound nbt = inventory.getStackInSlot(91).getTagCompound();
-                        NBTTagList tagList = nbt.getTagList("blocks", Constants.NBT.TAG_COMPOUND);
-                        for(int i=0;i < tagList.tagCount();i++) {
-                            NBTTagCompound tag = tagList.getCompoundTagAt(i);
-                            int x = tag.getInteger("blockX" + i);
-                            int z = tag.getInteger("blockZ" + i);
-                            int y = tag.getInteger("blockY" + i);
-                            IBlockState state = NBTUtilFix.readBlockState(tag);
-                            NBTTagCompound nbtBlock = null;
-                            if(tag.hasKey("nbt")) {
-                                nbtBlock = tag.getCompoundTag("nbt");
+                        if(structureTemplateManager.readNBTFile(inventory.getStackInSlot(91).getTagCompound().getString("name")) != null) {
+                            NBTTagCompound nbt = structureTemplateManager.readNBTFile(inventory.getStackInSlot(91).getTagCompound().getString("name"));
+                            NBTTagList tagList = nbt.getTagList("blocks", Constants.NBT.TAG_COMPOUND);
+                            for (int i = 0; i < tagList.tagCount(); i++) {
+                                NBTTagCompound tag = tagList.getCompoundTagAt(i);
+                                int x = tag.getInteger("blockX" + i);
+                                int z = tag.getInteger("blockZ" + i);
+                                int y = tag.getInteger("blockY" + i);
+                                IBlockState state = NBTUtilFix.readBlockState(tag);
+                                NBTTagCompound nbtBlock = null;
+                                if (tag.hasKey("nbt")) {
+                                    nbtBlock = tag.getCompoundTag("nbt");
+                                }
+
+                                int[] newBlockPosXYZ;
+                                newBlockPosXYZ = this.getRotateStructure(EnumFacing.byName(nbt.getString("facing")), x, y, z);
+                                structureTemplate.add(newBlockPosXYZ[0], newBlockPosXYZ[1], newBlockPosXYZ[2], state, nbtBlock);
                             }
 
-                            int[] newBlockPosXYZ;
-                            newBlockPosXYZ = this.getRotateStructure(EnumFacing.byName(nbt.getString("facing")), x, y, z);
-                            structureTemplate.add(newBlockPosXYZ[0], newBlockPosXYZ[1], newBlockPosXYZ[2], state, nbtBlock);
+                            structureTemplate.create(nbt.getString("type"), nbt.getString("name"), EnumFacing.byName(nbt.getString("facing")), nbt.getInteger("durability"), nbt.getInteger("rangeX"), nbt.getInteger("rangeY"), nbt.getInteger("rangeZ"));
+
+                            return structureTemplate.getStructure();
+                        } else {
+                            blockIsBuilding = false;
                         }
-
-                        structureTemplate.create(nbt.getString("type"), nbt.getString("name"), EnumFacing.byName(nbt.getString("facing")), nbt.getInteger("durability"), nbt.getInteger("rangeX"), nbt.getInteger("rangeY"), nbt.getInteger("rangeZ"));
-
-                        return structureTemplate.getStructure();
                     }
                 }
             }
@@ -398,7 +403,6 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
                 this.needItem = null;
                 this.texture = "green";
             } else {
-
                 EnumFacing facing_new = this.facing;
                 EnumFacing facing_original = blockStructure.facing;
 
@@ -445,6 +449,7 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
                                         if (blockStructure.blocks.size() != countBlocks + 1) {
                                             countBlocks++;
                                         } else {
+                                            countBlocks = blockStructure.blocks.size();
                                             break;
                                         }
                                     }
@@ -789,6 +794,8 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
         return INFINITE_EXTENT_AABB;
     }
 
+
+
     @Override
     public NBTTagCompound writeToNBT(NBTTagCompound compound) {
         compound.setTag("inventory", inventory.serializeNBT());
@@ -808,6 +815,8 @@ public class TileEntityBuilder extends TileEntity implements ITickable {
         }
 
     }
+
+
 
     @Override
     @Nullable

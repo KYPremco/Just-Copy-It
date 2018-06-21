@@ -134,36 +134,6 @@ public class StructureTemplate {
         }
     }
 
-    public String createNBTFile(String name, NBTTagCompound structure) {
-        File file = new File("resources\\JustCopyIt\\structures\\" + name + ".dat");
-
-        if(!file.exists()) {
-            try {
-                CompressedStreamTools.safeWrite(structure, file);
-                return "Finished";
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        } else {
-            return "File already exist";
-        }
-
-        return "Something went wrong!";
-    }
-
-    public NBTTagCompound getNBT(String fileName) {
-        return this.getNBTFile(fileName);
-    }
-
-    private NBTTagCompound getNBTFile(String fileName) {
-        try {
-            return CompressedStreamTools.read(new File("resources\\JustCopyIt\\structures\\" + fileName + ".dat"));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
     public static class BlockPlace {
         public String type;
         public String name;

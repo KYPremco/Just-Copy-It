@@ -1,9 +1,6 @@
 package com.kyproject.justcopyit.client;
 
-import com.kyproject.justcopyit.client.gui.GuiBuilderContainer;
-import com.kyproject.justcopyit.client.gui.GuiExportStructureContainer;
-import com.kyproject.justcopyit.client.gui.GuiRemote;
-import com.kyproject.justcopyit.client.gui.GuiScannerContainer;
+import com.kyproject.justcopyit.client.gui.*;
 import com.kyproject.justcopyit.container.builderContainer.ContainerBuilder;
 import com.kyproject.justcopyit.container.exportStructureContainer.ContainerExportStructure;
 import com.kyproject.justcopyit.container.scannercontainer.ContainerScanner;
@@ -18,7 +15,7 @@ import net.minecraftforge.fml.common.network.IGuiHandler;
 
 public class GuiHandler implements IGuiHandler {
 
-    public static final int GUI_BUILDER_CONTAINER = 0, GUI_EXPORT_CONTAINER = 1, GUI_SCANNER_CONTAINER = 2, GUI_REMOTE = 3;
+    public static final int GUI_BUILDER_CONTAINER = 0, GUI_EXPORT_CONTAINER = 1, GUI_SCANNER_CONTAINER = 2, GUI_REMOTE = 3, GUI_ITEM_LIST = 4;
 
     @Override
     public Object getServerGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z) {
@@ -48,6 +45,8 @@ public class GuiHandler implements IGuiHandler {
                 return new GuiScannerContainer(player.inventory, (TileEntityScanner) te);
             case GUI_REMOTE:
                 return new GuiRemote(world, x,y,z);
+            case GUI_ITEM_LIST:
+                return new GuiItemList(player.inventory.getCurrentItem().getTagCompound(), world);
             default: return null;
         }
     }
